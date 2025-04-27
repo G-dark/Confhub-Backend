@@ -1,14 +1,64 @@
 import { IEvent } from "../Domain/Interfaces/IEvent.js";
+import { Database } from "../DB/Database.js";
+import { dateToString } from "../Utils/tools.js";
+import { myEvent } from "../Domain/Entities/Event.js";
 
-class Conference implements IEvent{
-    suscribeToAnEvent(eventid: Number): boolean {
-        throw new Error("Method not implemented.");
-    }
-    unSuscribeFromAnEvent(eventid: Number): boolean {
-        throw new Error("Method not implemented.");
-    }
-    isSubscribed(eventid: Number): boolean {
-        throw new Error("Method not implemented.");
-    }
+export class Conference implements IEvent {
+  Conference() {}
 
+  async thisEventExists(eventid: number): Promise<boolean> {
+    return await Database.idExists(eventid, "events", "eventid");
+  }
+  async makeAnEvent(event: myEvent): Promise<boolean> {
+    return await Database.register("events", event);
+  }
+  async updateAnEvent(event: myEvent, eventid: number): Promise<boolean> {
+    return await Database.update(eventid, "events", "eventid", event);
+  }
+  async deleteAnEvent(eventid: number): Promise<boolean> {
+    return await Database.delete(eventid, "events", "eventid");
+  }
+  async getEvents(eventid: number): Promise<any> {
+    return await Database.read(eventid, "events", "eventid");
+  }
+
+  async suscribeToAnEvent(eventid: number): Promise<boolean> {
+    const event = (await Database.read(eventid, "events", "eventid"))[0];
+    const result1 = await Database.updateAField(
+      "events",
+      "attendees",
+      "eventid",
+      event.attendees + 1,
+      eventid
+    );
+    const result2 = await Database.updateAField(
+      "events",
+      "availableSpots",
+      "eventid",
+      event.availablespots - 1,
+      eventid
+    );
+
+    return result1 && result2;
+  }
+  async unSuscribeFromAnEvent(eventid: number): Promise<boolean> {
+    const event = (await Database.read(eventid, "events", "eventid"))[0];
+
+    const result1 = await Database.updateAField(
+      "events",
+      "attendees",
+      "eventid",
+      event.attendees - 1,
+      eventid
+    );
+    const result2 = await Database.updateAField(
+      "events",
+      "availableSpots",
+      "eventid",
+      event.availablespots + 1,
+      eventid
+    );
+
+    return result1 && result2;
+  }
 }

@@ -1,13 +1,20 @@
 import { Request, Response } from "express";
-import { Database } from "../DB/Database.js";
 import { myEvent } from "../Domain/Entities/Event.js";
 import { generateRandomId } from "../Utils/tools.js";
+import { SuscribeToAnEventUsecase } from "../Domain/Usecases/EventUsecases/SubscribetoAnEventUsecase.js";
+import { Conference } from "../Implementations/Conference.js";
+import { ThisEventExistsUsecase } from "../Domain/Usecases/EventUsecases/ThisEventExistsUsecase.js";
+import { UpdateAnEventUsecase } from "../Domain/Usecases/EventUsecases/UpdateAnEventUsecase.js";
+import { DeleteAnEventUsecase } from "../Domain/Usecases/EventUsecases/DeleteAnEventUsecase.js";
+import { GetEventsUsecase } from "../Domain/Usecases/EventUsecases/GetEventsUsecase.js";
+import { UnSuscribeFromAnEventUsecase } from "../Domain/Usecases/EventUsecases/UnSubscribeFromAnEventUsecase.js";
 
 export const getEvents: any = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
   try {
-    const { id } = req.params;
-    const result = await Database.read(id, "events", "eventid");
-    console.log(result);
+    const result = await GetEventsUsecase.call(Number(id));
+
     return result.length > 0
       ? res.json(result)
       : res.json({ msg: "Sin eventos con ese id" }).status(404);
@@ -16,7 +23,6 @@ export const getEvents: any = async (req: Request, res: Response) => {
     res.status(500).json({ msg: "Error interno" });
   }
 };
-
 
 export const registerEvent: any = async (req: Request, res: Response) => {
   try {
@@ -37,11 +43,11 @@ export const registerEvent: any = async (req: Request, res: Response) => {
       tags,
     } = req.body;
 
-    let eventid:number;
+    let eventid: number;
 
     do {
       eventid = generateRandomId();
-    } while (await Database.idExists(eventid, "events", "eventid"));
+    } while ( await ThisEventExistsUsecase.call(eventid));
 
     const event: myEvent = {
       eventid,
@@ -51,7 +57,7 @@ export const registerEvent: any = async (req: Request, res: Response) => {
       avgScore,
       availableSpots,
       category,
-      dateTime:new Date(dateTime),
+      dateTime: new Date(dateTime),
       location,
       numberReviews,
       sessionOrder,
@@ -60,12 +66,12 @@ export const registerEvent: any = async (req: Request, res: Response) => {
       status,
       tags,
     };
-
-    const result = await Database.register("events", event);
+    const conference = new Conference();
+    const result = await conference.makeAnEvent(event);
 
     return result
       ? res.json({ msg: "Evento registrado" })
-      : res.json({ msg: "No registrado" }).status(404);
+      : res.json({ msg: "Evento no registrado" }).status(404);
   } catch (error) {
     console.error("se obtuvo un error", error);
     res.status(500).json({ msg: "Error interno" });
@@ -73,26 +79,27 @@ export const registerEvent: any = async (req: Request, res: Response) => {
 };
 
 export const updateEvent: any = async (req: Request, res: Response) => {
-  const {id} = req.params;
-  try {
-    const {
-      eventid,
-      title,
-      description,
-      attendees,
-      avgScore,
-      availableSpots,
-      category,
-      dateTime,
-      location,
-      numberReviews,
-      sessionOrder,
-      speakerAvatar,
-      speakerName,
-      status,
-      tags,
-    } = req.body;
+  const { id } = req.params;
 
+  const {
+    eventid,
+    title,
+    description,
+    attendees,
+    avgScore,
+    availableSpots,
+    category,
+    dateTime,
+    location,
+    numberReviews,
+    sessionOrder,
+    speakerAvatar,
+    speakerName,
+    status,
+    tags,
+  } = req.body;
+
+  try {
 
     const event: myEvent = {
       eventid,
@@ -102,7 +109,7 @@ export const updateEvent: any = async (req: Request, res: Response) => {
       avgScore,
       availableSpots,
       category,
-      dateTime:new Date(dateTime),
+      dateTime: new Date(dateTime),
       location,
       numberReviews,
       sessionOrder,
@@ -111,16 +118,18 @@ export const updateEvent: any = async (req: Request, res: Response) => {
       status,
       tags,
     };
-    const exists = await Database.idExists(id, "events", "eventid");
+
+
+    const exists = await ThisEventExistsUsecase.call(Number(id));
 
     if (exists) {
-      const result = await Database.update(id, "events", "eventid", event);
+      const result = await UpdateAnEventUsecase.call(event,Number(id));
 
       return result
         ? res.json({ msg: "Evento actualizado" })
-        : res.json({ msg: "No actualizado" }).status(404);
+        : res.json({ msg: "Evento no actualizado" }).status(404);
     } else {
-      throw new Error("Ese evento no existe");
+      return res.json({msg:"Ese evento no existe"});
     }
   } catch (error) {
     console.error("se obtuvo un error", error);
@@ -131,18 +140,51 @@ export const updateEvent: any = async (req: Request, res: Response) => {
 export const deleteEvent: any = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const exists = await Database.idExists(id, "events", "eventid");
+    const exists = await ThisEventExistsUsecase.call(Number(id));
     if (exists) {
-      const result = await Database.delete(id, "events", "eventid");
-      console.log(result);
+      const result = await DeleteAnEventUsecase.call(Number(id));
+
       return result
-      ? res.json({ msg: "Evento eliminado" })
-      : res.json({ msg: "No eliminado" }).status(404);
+        ? res.json({ msg: "Evento eliminado" })
+        : res.json({ msg: "No eliminado" }).status(404);
     } else {
-      throw new Error("Ese evento no existe");
+    return res.json({msg:"Ese evento no existe"});
     }
   } catch (error) {
     console.error("se obtuvo un error", error);
     res.status(500).json({ msg: "Error interno" });
+  }
+};
+
+export const subscribeToAnEvent: any = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const exists = await ThisEventExistsUsecase.call(Number(id));
+    if(exists){
+      const result = await SuscribeToAnEventUsecase.call(Number(id));
+      return result ? res.json({ msg: "Subscrito correctamente" }): res.json({ msg: "No subscrito" });
+    } else {
+      return res.json({msg:"Ese evento no existe"});
+    }
+
+  } catch (error) {
+    console.error("Hubo un error", error);
+    return res.json({ msg: "Error interno" });
+  }
+};
+
+export const unSubscribeFromAnEvent: any = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const exists = await ThisEventExistsUsecase.call(Number(id));
+    if(exists){
+      const result = await UnSuscribeFromAnEventUsecase.call(Number(id));
+      return result ? res.json({ msg: "Desubscrito correctamente" }): res.json({ msg: "No desubscrito" });
+    } else{
+      return res.json({msg:"Ese evento no existe"});
+    }
+  } catch (error) {
+    console.error("Hubo un error", error);
+    return res.json({ msg: "Error interno" });
   }
 };

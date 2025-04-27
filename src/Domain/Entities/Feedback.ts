@@ -1,10 +1,12 @@
 export type Feedback = {
-  id: Number;
-  comment: String;
+  id: number;
+  comment: string;
   title: string;
-  score: Number;
-  likes: Number;
-  dislikes: Number;
+  score: number;
+  likes: number;
+  dislikes: number;
   dateTime: Date;
-  eventid: Number;
+  eventid: number;
+  answer:string;
+  answerDateTime:Date;
 };

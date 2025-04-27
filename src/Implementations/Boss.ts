@@ -1,23 +1,20 @@
+import { Database } from "../DB/Database.js";
+import { Admin } from "../Domain/Entities/Admin.js";
 import { myEvent } from "../Domain/Entities/Event.js";
 import { Speaker } from "../Domain/Entities/Speaker.js";
 import { IAdmin } from "../Domain/Interfaces/IAdmin.js";
 
-class Boss implements IAdmin{
+export class Boss implements IAdmin {
+  Boss() {}
 
-    deleteProfile(speaker: Speaker): boolean {
-        throw new Error("Method not implemented.");
-    }
-    makeAnEvent(event: myEvent): boolean {
-        throw new Error("Method not implemented.");
-    }
-    deleteAnEvent(eventid: Number): boolean {
-        throw new Error("Method not implemented.");
-    }
-    answerAFeedback(feedbackid: Number): boolean {
-        throw new Error("Method not implemented.");
-    }
-    editProfile(speaker: Speaker): boolean {
-        throw new Error("Method not implemented.");
-    }
+  async updateProfile(admin: Admin, email: string): Promise<boolean> {
+    return await Database.update(email, "admins", "email", admin);
+  }
+  async makeAProfile(admin: Admin): Promise<boolean> {
+    return await Database.register("admins", admin);
+  }
+  async deleteProfile(email: string): Promise<boolean> {
+    return await Database.delete(email, "speakers", "email");
+  }
 
 }
