@@ -3,10 +3,8 @@ import { Speaker } from "../Entities/Speaker.js";
 
 export interface ISpeaker{
 
-    makeAnEvent(event:myEvent): boolean;
-    deleteAnEvent(eventid:Number): boolean;
-    answerAFeedback(feedbackid:Number):boolean;
-    editProfile(speaker:Speaker): boolean;
-
+    updateProfile(speaker:Speaker,email:string): Promise<boolean>;
+    makeAProfile(speaker:Speaker):Promise<boolean>;
+    deleteProfile(email:string):Promise<boolean>;
 
 }

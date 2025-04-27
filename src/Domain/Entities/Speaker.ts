@@ -1,7 +1,7 @@
 export type Speaker = {
-  firstName: String;
+  firstName: string;
   lastName: string;
-  email: String;
-  password: String;
-  events?: Number[];
+  email: string;
+  password: string;
+  events?: number[];
 };

@@ -34,7 +34,7 @@ export class Database {
           registered.avgScore,
           registered.availableSpots,
           registered.category,
-          registered.dateTime,
+          registered.dateTime.toISOString(),
           registered.location,
           registered.numberReviews,
           JSON.stringify(registered.sessionOrder),
@@ -61,7 +61,7 @@ export class Database {
           registered.score,
           registered.likes,
           registered.dislikes,
-          registered.dateTime,
+          registered.dateTime.toISOString(),
         ],
       };
       result = await pool.query(query);
@@ -99,7 +99,7 @@ export class Database {
       };
       const result = await pool.query(query);
     }
-    return result;
+    return !!result;
   }
 
   static update(
@@ -139,7 +139,6 @@ export class Database {
     let result;
 
     if ("attendees" in updated) {
-
       const query = {
         text: `update ${table} SET eventid = $1, title = $2, description= $3,
             attendees = $4,avgScore = $5, availableSpots = $6, category=$7,
@@ -154,7 +153,7 @@ export class Database {
           updated.avgScore,
           updated.availableSpots,
           updated.category,
-          updated.dateTime,
+          updated.dateTime.toISOString(),
           updated.location,
           updated.numberReviews,
           JSON.stringify(updated.sessionOrder),
@@ -182,7 +181,7 @@ export class Database {
           updated.score,
           updated.likes,
           updated.dislikes,
-          updated.dateTime,
+          updated.dateTime.toISOString(),
           id,
         ],
       };
@@ -224,8 +223,23 @@ export class Database {
       result = await pool.query(query);
     }
 
-    return result;
+    return !!result;
   }
+
+  static updateAField: any = async (
+    table: string,
+    fieldName: string,
+    fieldName2: string,
+    value: string | number | Object,
+    id: string | number
+  ) => {
+    const query = {
+      text: `update ${table} SET ${fieldName} = $1 WHERE ${fieldName2} = $2`,
+      values: [value, id],
+    };
+
+    return !!(await pool.query(query))
+  };
 
   static read: any = async (
     id: number | string,

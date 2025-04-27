@@ -1,19 +1,19 @@
 
     export type myEvent = {
-        eventid: Number,
-        title: String,
-        category: String,
-        location: String,
+        eventid: number,
+        title: string,
+        category: string,
+        location: string,
         dateTime:Date,
-        attendees: Number,
-        availableSpots: Number,
-        description: String,
-        speakerName:String,
+        attendees: number,
+        availableSpots: number,
+        description: string,
+        speakerName:string,
         speakerAvatar:String,
         sessionOrder: JSON,
-        tags: String[],
-        avgScore:Number,
-        numberReviews:Number,
+        tags: string[],
+        avgScore:number,
+        numberReviews:number,
         status:"Por empezar"|"Finalizado"
     }
 

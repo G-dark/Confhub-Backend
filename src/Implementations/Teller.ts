@@ -1,20 +1,17 @@
-
-import { myEvent } from "../Domain/Entities/Event.js";
+import { Database } from "../DB/Database.js";
 import { Speaker } from "../Domain/Entities/Speaker.js";
 import { ISpeaker } from "../Domain/Interfaces/ISpeaker.js";
 
-class Teller implements ISpeaker{
-    makeAnEvent(event: myEvent): boolean {
-        throw new Error("Method not implemented.");
-    }
-    deleteAnEvent(eventid: Number): boolean {
-        throw new Error("Method not implemented.");
-    }
-    answerAFeedback(feedbackid: Number): boolean {
-        throw new Error("Method not implemented.");
-    }
-    editProfile(speaker: Speaker): boolean {
-        throw new Error("Method not implemented.");
-    }
+export class Teller implements ISpeaker {
+  Teller() {}
+  async updateProfile(speaker: Speaker,email:string): Promise<boolean> {
+    return await Database.update(email, "speakers", "email", speaker);
+  }
+  async deleteProfile(email: string): Promise<boolean> {
+    return await Database.delete(email, "speakers", "email");
+  }
 
+  async makeAProfile(speaker: Speaker): Promise<boolean> {
+    return await Database.register("speakers", speaker);
+  }
 }
