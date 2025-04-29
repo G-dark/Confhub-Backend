@@ -1,0 +1,84 @@
+### Crear un Evento
+POST http://localhost:3000/events
+Content-Type: application/json
+
+{
+        "title": "Buenas prácticas de programación en Java",
+        "category": "Desarrollo",
+        "location": "Risaralda, Colombia",
+        "dateTime": "2025-08-26T11:00:00.000Z",
+        "attendees": 13,
+        "availableSpots": 120,
+        "description": "Conoce técnicas y principios que te ayudarán a escribir código más limpio, legible y mantenible en Java.",
+        "speakerName": "Felipe Montero",
+        "speakerAvatar": "https://avatar.iran.liara.run/username?username=Felipe+Romero",
+        "sessionOrder": [
+            {
+                "name": "Principios SOLID",
+                "duration": 30
+            },
+            {
+                "name": "Clean Code",
+                "duration": 25
+            },
+            {
+                "name": "Refactorización y patrones",
+                "duration": 30
+            }
+        ],
+        "tags": [
+            "Java",
+            "Clean Code",
+            "Buenas prácticas"
+        ],
+        "avgScore": 0,
+        "numberReviews": 0,
+        "status": "Por empezar"
+    }
+
+###
+
+### Crear un Feedback
+POST http://localhost:3000/feedbacks
+Content-Type: application/json
+
+  {
+    "eventid": 83492175,                               ## el evento debe existir
+    "title": "Muy buen enfoque para principiantes.",
+    "comment": "Este comentario destaca un punto importante del evento. Sin embargo, podría beneficiarse de más ejemplos concretos o aplicaciones prácticas que permitan entenderlo mejor.",
+    "score": 4,
+    "likes": 0,
+    "dislikes": 0
+  }
+
+###
+
+### Crear un Speaker
+POST http://localhost:3000/speakers
+Content-Type: application/json
+
+{
+  "firstname": "Edison",
+  "lastname": "Pacheco",
+  "email": "edison@example.com",
+  "password": "12345678",
+  events:null,
+
+}
+
+###
+
+### Crear un Admin
+POST http://localhost:3000/admins
+Content-Type: application/json
+
+{
+  "firstname": "Edison",
+  "lastname": "Pacheco",
+  "email": "edison@example.com",
+  "password": "12345678",
+  events:null,
+  "rol":true
+}
+
+###

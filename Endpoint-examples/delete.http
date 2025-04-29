@@ -1,0 +1,23 @@
+### Eliminar un Evento
+DELETE http://localhost:3000/events/1
+Content-Type: application/json
+
+###
+
+### Eliminar un Feedback
+DELETE http://localhost:3000/feedbacks/1
+Content-Type: application/json
+
+###
+
+### Eliminar un Speaker
+DELETE http://localhost:3000/speakers/1
+Content-Type: application/json
+
+###
+
+### Eliminar un Admin
+DELETE http://localhost:3000/admins/1
+Content-Type: application/json
+
+###

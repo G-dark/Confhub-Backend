@@ -1,0 +1,47 @@
+### Obtener TODOS los Eventos
+GET http://localhost:3000/events
+Content-Type: application/json
+
+###
+
+### Obtener UN Evento por ID
+GET http://localhost:3000/events/1
+Content-Type: application/json
+
+###
+
+### Obtener TODOS los Feedbacks
+GET http://localhost:3000/feedbacks
+Content-Type: application/json
+
+###
+
+### Obtener UN Feedback por ID
+GET http://localhost:3000/feedbacks/1
+Content-Type: application/json
+
+###
+
+### Obtener TODOS los Speakers
+GET http://localhost:3000/speakers
+Content-Type: application/json
+
+###
+
+### Obtener UN Speaker por ID
+GET http://localhost:3000/speakers/1
+Content-Type: application/json
+
+###
+
+### Obtener TODOS los Admins
+GET http://localhost:3000/admins
+Content-Type: application/json
+
+###
+
+### Obtener UN Admin por ID
+GET http://localhost:3000/admins/1
+Content-Type: application/json
+
+###
