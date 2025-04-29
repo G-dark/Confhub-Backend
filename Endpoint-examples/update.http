@@ -1,0 +1,78 @@
+### Actualizar un Evento
+PATCH http://localhost:3000/events/1
+Content-Type: application/json
+
+{
+  "title": "Buenas prácticas de programación en Java (Actualizado)",
+  "category": "Desarrollo de Software",
+  "location": "Risaralda, Colombia",
+  "dateTime": "2025-08-27T10:00:00.000Z",
+  "attendees": 20,
+  "availableSpots": 100,
+  "description": "Mejorando aún más tus técnicas de programación limpia en Java.",
+  "speakerName": "Felipe Montero",
+  "speakerAvatar": "https://avatar.iran.liara.run/username?username=Felipe+Montero",
+  "sessionOrder": [
+    {
+      "name": "Principios SOLID Avanzados",
+      "duration": 35
+    },
+    {
+      "name": "Clean Architecture",
+      "duration": 40
+    }
+  ],
+  "tags": [
+    "Java",
+    "Arquitectura limpia",
+    "Buenas prácticas"
+  ],
+  "avgScore": 4.5,
+  "numberReviews": 20,
+  "status": "En progreso"
+}
+
+###
+
+### Actualizar un Feedback
+PATCH http://localhost:3000/feedbacks/1
+Content-Type: application/json
+
+{
+  "title": "Excelente enfoque para todos los niveles.",
+  "comment": "Ahora incluye más ejemplos prácticos, lo cual es perfecto para entender conceptos complejos.",
+  "score": 5,
+  "likes": 10,
+  "dislikes": 1
+}
+
+###
+
+### Actualizar un Speaker
+PATCH http://localhost:3000/speakers/1
+Content-Type: application/json
+
+{
+  "firstname": "Edison",
+  "lastname": "Pacheco Actualizado",
+  "email": "edison_updated@example.com",
+  "password": "87654321",
+  "events": [20043433, 2328377283, 3456677775333]
+}
+
+###
+
+### Actualizar un Admin
+PATCH http://localhost:3000/admins/1
+Content-Type: application/json
+
+{
+  "firstname": "Edison",
+  "lastname": "Pacheco Actualizado",
+  "email": "edison_updated@example.com",
+  "password": "87654321",
+  "events": [20043433, 2328377283, 3456677775333],
+  "rol": false
+}
+
+###
