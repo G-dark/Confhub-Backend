@@ -1,13 +1,25 @@
-import { Client } from "pg";
-import { PASSWORD } from "../dist/App/config.js";
+import pkg from 'pg';
+const { Client } = pkg;
+import { config } from "dotenv";
+config();
+
 async function setupDatabase() {
-  // Cliente para conectarse a la base 'postgres' inicialmente
+  // Variables de entorno
+  const PORT = process.env.PORT || 5432;
+  const HOST = process.env.HOST || "localhost";
+  const DB_NAME = process.env.DB_NAME || "confhub_db";
+  const DB_PORT = process.env.DB_PORT || 5432;
+  const USER = process.env.USER || "postgres";
+  const PASSWORD = process.env.PASSWORD || "tu_password";
+
+    console.log("Configurando la base de datos...");
+  // Configuración del cliente inicial para conectarse a la base 'postgres'
   const client = new Client({
-    user: "postgres",
-    host: "localhost",
+    user: USER,
+    host: HOST,
     password: PASSWORD,
-    port: 5432,
-    database: "postgres", // nos conectamos a la base de sistema
+    port: DB_PORT,
+    database: "postgres", // Nos conectamos a la base de sistema
   });
 
   try {
@@ -22,11 +34,11 @@ async function setupDatabase() {
 
     // Ahora conectarse a la nueva base
     const dbClient = new Client({
-      user: "postgres",
-      host: "localhost",
-      password: "tu_password",
-      port: 5432,
-      database: "confhub_db",
+      user: USER,
+      host: HOST,
+      password: PASSWORD,
+      port: DB_PORT,
+      database: DB_NAME,
     });
 
     await dbClient.connect();
@@ -78,7 +90,7 @@ async function setupDatabase() {
     CONSTRAINT speakers_pkey PRIMARY KEY (passwrd)
 );
        `);
-       await dbClient.query(`
+    await dbClient.query(`
 CREATE TABLE admins
 (
     firstname text COLLATE pg_catalog."default",
@@ -302,3 +314,5 @@ INSERT INTO feedbacks (eventid, id_, title, comment_, score, dateTime, likes, di
     console.error("Error en el proceso:", error);
   }
 }
+
+setupDatabase();

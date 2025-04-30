@@ -19,4 +19,5 @@ const PASSWORD = process.env.PASSWORD;
   port: DB_PORT,
 };
 
+console.log("Database connection config:", poolConfig);
 export const pool = new Pool(poolConfig);

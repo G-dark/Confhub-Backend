@@ -7,7 +7,8 @@
   "scripts": {
     "test": "node --trace-warnings --experimental-vm-modules node_modules/jest/bin/jest.js",
     "start": "npx tsc",
-    "play": "node dist/App/app.js"
+    "play": "node dist/App/app.js",
+    "setup-db": "node \"Create and poblate DB/setup-database.js\""
   },
   "keywords": [
     "Conferencias"
