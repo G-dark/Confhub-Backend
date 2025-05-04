@@ -13,6 +13,15 @@ import { UnLikeAFeedbackUsecase } from "../Domain/Usecases/FeedbackUsecases/UnLi
 import { DislikeAFeedbackUsecase } from "../Domain/Usecases/FeedbackUsecases/DislikeAFeedbackUsecase.js";
 import { UnDislikeAFeedbackUsecase } from "../Domain/Usecases/FeedbackUsecases/UnDislikeAFeedbackUsecase.js";
 import { generateRandomId } from "../Utils/tools.js";
+import { readFile } from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url";
+import { UpdateReviewAvgScoreUsecase } from "../Domain/Usecases/EventUsecases/UpdateReviewScoresUseCase.js";
+
+// inicializaciones necesarias
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const logFilePath = path.join(__dirname, "../../ApiVersion.txt");
 
 export const getFeedbacks: any = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -57,8 +66,10 @@ export const answerAFeedback: any = async (req: Request, res: Response) => {
     const exists = await ThisFeedbackExistsUsecase.call(Number(id));
     if (exists) {
       const result = await AnswerAFeedbackUsecase.call(Number(id), answer);
+
+      const ApiVersion = await readFile(logFilePath, "utf-8");
       return result
-        ? res.json({ msg: "Respuesta guardada" })
+        ? res.json({ msg: "Respuesta guardada", apiVersion: ApiVersion })
         : res.json({ msg: "Respuesta no guardada" });
     } else {
       return res.json({ msg: "Ese feedback no existe" }).status(404);
@@ -74,9 +85,12 @@ export const deleteAFeedback: any = async (req: Request, res: Response) => {
   try {
     const exists = await ThisFeedbackExistsUsecase.call(Number(id));
     if (exists) {
+      const feedback = (await GetFeedbacksUsecase.call(Number(id)))[0];
       const result = await DeleteAFeedbackUsecase.call(Number(id));
-      return result
-        ? res.json({ msg: "Feedback eliminado" })
+      const result2 = await UpdateReviewAvgScoreUsecase.call(feedback.eventid,-1);
+      const ApiVersion = await readFile(logFilePath, "utf-8");
+      return result && result2
+        ? res.json({ msg: "Feedback eliminado", apiVersion: ApiVersion })
         : res.json({ msg: "Feedback no eliminado" });
     } else {
       return res.json({ msg: "Ese feedback no existe" }).status(404);
@@ -98,7 +112,7 @@ export const updateAFeedback: any = async (req: Request, res: Response) => {
     dislikes,
     answer,
     feedbackid,
-    answerDateTime
+    answerDateTime,
   } = req.body;
   try {
     const exists = await ThisFeedbackExistsUsecase.call(Number(id));
@@ -108,16 +122,18 @@ export const updateAFeedback: any = async (req: Request, res: Response) => {
         comment,
         title,
         score,
-        dateTime:new Date(Date.now()),
+        dateTime: new Date(Date.now()),
         likes,
         dislikes,
         answer,
         id: feedbackid,
-        answerDateTime
+        answerDateTime,
       };
       const result = await UpdateAFeedbackUsecase.call(feedback, Number(id));
-      return result
-        ? res.json({ msg: "Feedback actualizado" })
+      const result2 = await UpdateReviewAvgScoreUsecase.call(eventid,0);
+      const ApiVersion = await readFile(logFilePath, "utf-8");
+      return result && result2
+        ? res.json({ msg: "Feedback actualizado", apiVersion: ApiVersion })
         : res.json({ msg: "Feedback no actualizado" });
     } else {
       return res.json({ msg: "Ese feedback no existe" }).status(404);
@@ -128,7 +144,16 @@ export const updateAFeedback: any = async (req: Request, res: Response) => {
   }
 };
 export const makeAFeedback: any = async (req: Request, res: Response) => {
-  const { eventid, comment, title, score, likes, dislikes, answer, answerDateTime } = req.body;
+  const {
+    eventid,
+    comment,
+    title,
+    score,
+    likes,
+    dislikes,
+    answer,
+    answerDateTime,
+  } = req.body;
   try {
     let id;
     do {
@@ -147,11 +172,14 @@ export const makeAFeedback: any = async (req: Request, res: Response) => {
         dislikes,
         answer,
         id,
-        answerDateTime
+        answerDateTime,
       };
       const result = await MakeAFeedbackUsecase.call(feedback);
-      return result
-        ? res.json({ msg: "Feedback registrado" })
+      const result2 = await UpdateReviewAvgScoreUsecase.call(eventid,1);
+      const ApiVersion = await readFile(logFilePath, "utf-8");
+
+      return result & result2
+        ? res.json({ msg: "Feedback registrado", apiVersion: ApiVersion })
         : res.json({ msg: "Feedback no registrado" });
     } else {
       return res.json({ msg: "Ese evento no existe" });
@@ -169,8 +197,9 @@ export const likeAFeedback: any = async (req: Request, res: Response) => {
     const exists = await ThisFeedbackExistsUsecase.call(Number(id));
     if (exists) {
       const result = await LikeAFeedbackUsecase.call(Number(id));
+      const ApiVersion = await readFile(logFilePath, "utf-8");
       return result
-        ? res.json({ msg: "Feedback likeado" })
+        ? res.json({ msg: "Feedback likeado", apiVersion: ApiVersion })
         : res.json({ msg: "Feedback no likeado" });
     } else {
       return res.json({ msg: "Ese feedback no existe" }).status(404);
@@ -186,8 +215,10 @@ export const unLikeAFeedback: any = async (req: Request, res: Response) => {
     const exists = await ThisFeedbackExistsUsecase.call(Number(id));
     if (exists) {
       const result = await UnLikeAFeedbackUsecase.call(Number(id));
+
+     const ApiVersion = await readFile(logFilePath, "utf-8");
       return result
-        ? res.json({ msg: "Feedback deslikeado" })
+        ? res.json({ msg: "Feedback deslikeado", apiVersion: ApiVersion })
         : res.json({ msg: "Feedback no deslikeado" });
     } else {
       return res.json({ msg: "Ese feedback no existe" }).status(404);
@@ -203,8 +234,10 @@ export const dislikeAFeedback: any = async (req: Request, res: Response) => {
     const exists = await ThisFeedbackExistsUsecase.call(Number(id));
     if (exists) {
       const result = await DislikeAFeedbackUsecase.call(Number(id));
+
+      const ApiVersion = await readFile(logFilePath, "utf-8");
       return result
-        ? res.json({ msg: "Feedback dislikeado" })
+        ? res.json({ msg: "Feedback dislikeado", apiVersion: ApiVersion })
         : res.json({ msg: "Feedback no dislikeado" });
     } else {
       return res.json({ msg: "Ese feedback no existe" }).status(404);
@@ -220,8 +253,9 @@ export const unDislikeAFeedback: any = async (req: Request, res: Response) => {
     const exists = await ThisFeedbackExistsUsecase.call(Number(id));
     if (exists) {
       const result = await UnDislikeAFeedbackUsecase.call(Number(id));
+      const ApiVersion = await readFile(logFilePath, "utf-8");
       return result
-        ? res.json({ msg: "Feedback desdislikeado" })
+        ? res.json({ msg: "Feedback desdislikeado", apiVersion: ApiVersion })
         : res.json({ msg: "Feedback no desdislikeado" });
     } else {
       return res.json({ msg: "Ese feedback no existe" }).status(404);
