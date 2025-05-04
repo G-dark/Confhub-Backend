@@ -16,12 +16,20 @@ const app: any = express();
 
 // middlewares
 app.use(express.json());
+
 app.use(updateApiVersion);
 app.use(cors());
 
 // routes
 app.use(events);
 app.use(feedbacks);
+
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'PACTH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }));
+
 
 app.get("/Apiversion", async (req: Request, res: Response) => {
   const apiVersion = await readFile(logFilePath, "utf-8");
