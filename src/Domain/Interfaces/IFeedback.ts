@@ -12,4 +12,5 @@ export interface IFeedback {
   answerAFeedback(feedbackid: number, answer: string): Promise<boolean>;
   thisFeedbackExists(feedbackid:number):Promise<boolean>;
   getFeedbacksFromEvent(eventid:number):Promise<boolean>;
+  
 }

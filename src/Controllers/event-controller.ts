@@ -8,6 +8,13 @@ import { UpdateAnEventUsecase } from "../Domain/Usecases/EventUsecases/UpdateAnE
 import { DeleteAnEventUsecase } from "../Domain/Usecases/EventUsecases/DeleteAnEventUsecase.js";
 import { GetEventsUsecase } from "../Domain/Usecases/EventUsecases/GetEventsUsecase.js";
 import { UnSuscribeFromAnEventUsecase } from "../Domain/Usecases/EventUsecases/UnSubscribeFromAnEventUsecase.js";
+import { readFile } from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const logFilePath = path.join(__dirname, "../../ApiVersion.txt");
 
 export const getEvents: any = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -47,7 +54,7 @@ export const registerEvent: any = async (req: Request, res: Response) => {
 
     do {
       eventid = generateRandomId();
-    } while ( await ThisEventExistsUsecase.call(eventid));
+    } while (await ThisEventExistsUsecase.call(eventid));
 
     const event: myEvent = {
       eventid,
@@ -69,8 +76,9 @@ export const registerEvent: any = async (req: Request, res: Response) => {
     const conference = new Conference();
     const result = await conference.makeAnEvent(event);
 
+    const ApiVersion = await readFile(logFilePath, "utf-8");
     return result
-      ? res.json({ msg: "Evento registrado" })
+      ? res.json({ msg: "Evento registrado", apiVersion: ApiVersion })
       : res.json({ msg: "Evento no registrado" }).status(404);
   } catch (error) {
     console.error("se obtuvo un error", error);
@@ -100,7 +108,6 @@ export const updateEvent: any = async (req: Request, res: Response) => {
   } = req.body;
 
   try {
-
     const event: myEvent = {
       eventid,
       title,
@@ -119,17 +126,18 @@ export const updateEvent: any = async (req: Request, res: Response) => {
       tags,
     };
 
-
     const exists = await ThisEventExistsUsecase.call(Number(id));
 
     if (exists) {
-      const result = await UpdateAnEventUsecase.call(event,Number(id));
+      const result = await UpdateAnEventUsecase.call(event, Number(id));
+
+      const ApiVersion = await readFile(logFilePath, "utf-8");
 
       return result
-        ? res.json({ msg: "Evento actualizado" })
+        ? res.json({ msg: "Evento actualizado", apiversion: ApiVersion })
         : res.json({ msg: "Evento no actualizado" }).status(404);
     } else {
-      return res.json({msg:"Ese evento no existe"});
+      return res.json({ msg: "Ese evento no existe" });
     }
   } catch (error) {
     console.error("se obtuvo un error", error);
@@ -144,11 +152,13 @@ export const deleteEvent: any = async (req: Request, res: Response) => {
     if (exists) {
       const result = await DeleteAnEventUsecase.call(Number(id));
 
+      const ApiVersion = readFile(logFilePath, "utf-8");
+
       return result
-        ? res.json({ msg: "Evento eliminado" })
+        ? res.json({ msg: "Evento eliminado", apiversion: ApiVersion })
         : res.json({ msg: "No eliminado" }).status(404);
     } else {
-    return res.json({msg:"Ese evento no existe"});
+      return res.json({ msg: "Ese evento no existe" });
     }
   } catch (error) {
     console.error("se obtuvo un error", error);
@@ -160,28 +170,41 @@ export const subscribeToAnEvent: any = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
     const exists = await ThisEventExistsUsecase.call(Number(id));
-    if(exists){
-      const result = await SuscribeToAnEventUsecase.call(Number(id));
-      return result ? res.json({ msg: "Subscrito correctamente" }): res.json({ msg: "No subscrito" });
-    } else {
-      return res.json({msg:"Ese evento no existe"});
-    }
 
+    if (exists) {
+      const result = await SuscribeToAnEventUsecase.call(Number(id));
+      const ApiVersion = await readFile(logFilePath, "utf-8");
+
+      return result
+        ? res.json({ msg: "Subscrito correctamente", apiVersion: ApiVersion })
+        : res.json({ msg: "No subscrito" });
+    } else {
+      return res.json({ msg: "Ese evento no existe" });
+    }
   } catch (error) {
     console.error("Hubo un error", error);
     return res.json({ msg: "Error interno" });
   }
 };
 
-export const unSubscribeFromAnEvent: any = async (req: Request, res: Response) => {
+export const unSubscribeFromAnEvent: any = async (
+  req: Request,
+  res: Response
+) => {
   const { id } = req.params;
   try {
     const exists = await ThisEventExistsUsecase.call(Number(id));
-    if(exists){
+    if (exists) {
       const result = await UnSuscribeFromAnEventUsecase.call(Number(id));
-      return result ? res.json({ msg: "Desubscrito correctamente" }): res.json({ msg: "No desubscrito" });
-    } else{
-      return res.json({msg:"Ese evento no existe"});
+
+      const ApiVersion = await readFile(logFilePath, "utf-8");
+
+
+      return result
+        ? res.json({ msg: "Desubscrito correctamente", apiVersion: ApiVersion })
+        : res.json({ msg: "No desubscrito" });
+    } else {
+      return res.json({ msg: "Ese evento no existe" });
     }
   } catch (error) {
     console.error("Hubo un error", error);

@@ -1,3 +1,5 @@
+import { myEvent } from "../Domain/Entities/Event.js";
+
 export const dateToString = (date: Date): String => {
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
@@ -16,5 +18,4 @@ export const dateToString = (date: Date): String => {
 export function generateRandomId(): number {
     return Math.floor(Math.random() * 1_000_000);
   }
-
 
