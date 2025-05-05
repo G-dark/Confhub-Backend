@@ -207,3 +207,63 @@ export const unSubscribeFromAnEvent: any = async (
     return res.json({ msg: "Error interno" });
   }
 };
+
+export const checkEventStatus: any = async (req: Request, res: Response) => {
+  const {id} = req.params
+  try {
+    const events = await GetEventsUsecase.call(Number(id));
+
+    if (!events || events.length === 0) {
+      return res.status(404).json({ msg: "No hay eventos para verificar" });
+    }
+
+    const now = new Date();
+    const updatedEvents = [];
+
+    for (const event of events) {
+      // Reasignar los atributos del evento al formato esperado
+      const updatedEvent = transformToMyEvent(event);
+      console.log("Verificando " + updatedEvent.title);
+
+      // Verificar si la fecha ya pasó y actualizar el estado
+      if (new Date(updatedEvent.dateTime).getTime() < now.getTime() && updatedEvent.status !== "Finalizado") {
+        updatedEvent.status = "Finalizado";
+        console.log("Estado actualizado");
+        await UpdateAnEventUsecase.call(updatedEvent, updatedEvent.eventid); // Actualizar el evento
+        updatedEvents.push({
+          eventid: updatedEvent.eventid,
+          title: updatedEvent.title,
+          status: updatedEvent.status,
+        });
+      }
+    }
+
+    return res.json({
+      msg: "Estados de eventos verificados",
+      updatedEvents,
+    });
+  } catch (error) {
+    console.error("Error al verificar el estado de los eventos", error);
+    res.status(500).json({ msg: "Error interno" });
+  }
+};
+
+const transformToMyEvent = (event: any): myEvent => {
+  return {
+    eventid: event.eventid,
+    title: event.title,
+    category: event.category,
+    location: event.location_,
+    dateTime: new Date(event.datetime), // Convertir a Date
+    attendees: event.attendees,
+    availableSpots: event.availablespots, // Reasignar
+    description: event.description,
+    speakerName: event.speakername, // Reasignar
+    speakerAvatar: event.speakeravatar, // Reasignar
+    sessionOrder: event.sessionorder, // Convertir de string a JSON
+    tags: event.tags,
+    avgScore: event.avgscore, // Reasignar
+    numberReviews: event.numberreviews, // Reasignar
+    status: event.status as "Por empezar" | "Finalizado", // Asegurar el tipo
+  };
+};

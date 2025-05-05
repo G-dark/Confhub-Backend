@@ -26,9 +26,19 @@ async function setupDatabase() {
     await client.connect();
     console.log("Conectado al servidor PostgreSQL");
 
-    // Crear la nueva base de datos
-    await client.query(`CREATE DATABASE confhub_db`);
-    console.log("Base de datos confhub_db creada");
+    // Verificar si la base de datos ya existe
+    const dbExistsQuery = `
+      SELECT 1 FROM pg_database WHERE datname = '${DB_NAME}';
+    `;
+    const dbExistsResult = await client.query(dbExistsQuery);
+
+    if (dbExistsResult.rows.length > 0) {
+      console.log(`La base de datos '${DB_NAME}' ya existe. Usándola...`);
+    } else {
+      // Crear la nueva base de datos si no existe
+      await client.query(`CREATE DATABASE ${DB_NAME}`);
+      console.log(`Base de datos '${DB_NAME}' creada`);
+    }
 
     await client.end();
 
