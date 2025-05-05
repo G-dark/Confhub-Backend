@@ -165,6 +165,12 @@ export const deleteEvent: any = async (req: Request, res: Response) => {
     res.status(500).json({ msg: "Error interno" });
   }
 };
+let subscribedEvents: number[] = [];
+
+export const getSubscribedEvents: any = async (req: Request, res: Response) => {
+  return res.json(subscribedEvents);
+  
+}
 
 export const subscribeToAnEvent: any = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -174,6 +180,9 @@ export const subscribeToAnEvent: any = async (req: Request, res: Response) => {
     if (exists) {
       const result = await SuscribeToAnEventUsecase.call(Number(id));
       const ApiVersion = await readFile(logFilePath, "utf-8");
+      if (result) {
+        subscribedEvents.push(Number(id));
+      }
 
       return result
         ? res.json({ msg: "Subscrito correctamente", apiVersion: ApiVersion })
@@ -196,6 +205,11 @@ export const unSubscribeFromAnEvent: any = async (
     const exists = await ThisEventExistsUsecase.call(Number(id));
     if (exists) {
       const result = await UnSuscribeFromAnEventUsecase.call(Number(id));
+      if (result) {
+        subscribedEvents = subscribedEvents.filter(
+          (event) => event !== Number(id)
+        );
+      }
 
       const ApiVersion = await readFile(logFilePath, "utf-8");
 
