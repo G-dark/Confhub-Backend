@@ -8,6 +8,7 @@ import { UpdateAnEventUsecase } from "../Domain/Usecases/EventUsecases/UpdateAnE
 import { DeleteAnEventUsecase } from "../Domain/Usecases/EventUsecases/DeleteAnEventUsecase.js";
 import { GetEventsUsecase } from "../Domain/Usecases/EventUsecases/GetEventsUsecase.js";
 import { UnSuscribeFromAnEventUsecase } from "../Domain/Usecases/EventUsecases/UnSubscribeFromAnEventUsecase.js";
+import { loadSubscribedEvents, saveSubscribedEvents } from "../Utils/subscriptions.js";
 import { readFile } from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -165,7 +166,9 @@ export const deleteEvent: any = async (req: Request, res: Response) => {
     res.status(500).json({ msg: "Error interno" });
   }
 };
+
 let subscribedEvents: number[] = [];
+loadSubscribedEvents().then((data) => (subscribedEvents = data));
 
 export const getSubscribedEvents: any = async (req: Request, res: Response) => {
   return res.json(subscribedEvents);
@@ -180,8 +183,9 @@ export const subscribeToAnEvent: any = async (req: Request, res: Response) => {
     if (exists) {
       const result = await SuscribeToAnEventUsecase.call(Number(id));
       const ApiVersion = await readFile(logFilePath, "utf-8");
-      if (result) {
+      if (result && !subscribedEvents.includes(Number(id))) {
         subscribedEvents.push(Number(id));
+        await saveSubscribedEvents(subscribedEvents);
       }
 
       return result
@@ -209,6 +213,7 @@ export const unSubscribeFromAnEvent: any = async (
         subscribedEvents = subscribedEvents.filter(
           (event) => event !== Number(id)
         );
+        await saveSubscribedEvents(subscribedEvents);
       }
 
       const ApiVersion = await readFile(logFilePath, "utf-8");
