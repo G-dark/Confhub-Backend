@@ -90,56 +90,33 @@ export const registerEvent: any = async (req: Request, res: Response) => {
 export const updateEvent: any = async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const {
-    eventid,
-    title,
-    description,
-    attendees,
-    avgScore,
-    availableSpots,
-    category,
-    dateTime,
-    location,
-    numberReviews,
-    sessionOrder,
-    speakerAvatar,
-    speakerName,
-    status,
-    tags,
-  } = req.body;
-
   try {
-    const event: myEvent = {
-      eventid,
-      title,
-      description,
-      attendees,
-      avgScore,
-      availableSpots,
-      category,
-      dateTime: new Date(dateTime),
-      location,
-      numberReviews,
-      sessionOrder,
-      speakerAvatar,
-      speakerName,
-      status,
-      tags,
+    const existingEvent = await ThisEventExistsUsecase.call(Number(id));
+    if (!existingEvent) {
+      return res.status(404).json({ msg: "Ese evento no existe" });
+    }
+
+    // Obtener los datos actuales del evento
+    const currentEvent = await GetEventsUsecase.call(Number(id));
+    if (!currentEvent) {
+      return res.status(404).json({ msg: "No se pudo obtener el evento actual" });
+    }
+
+    // Actualizar solo los campos enviados en el cuerpo de la solicitud
+    const updatedEvent = {
+      ...currentEvent, // Mantener los valores actuales
+      ...req.body, // Sobrescribir con los valores enviados
+      dateTime: req.body.dateTime ? new Date(req.body.dateTime) : currentEvent.dateTime,
     };
 
-    const exists = await ThisEventExistsUsecase.call(Number(id));
 
-    if (exists) {
-      const result = await UpdateAnEventUsecase.call(event, Number(id));
+    const result = await UpdateAnEventUsecase.call(updatedEvent, Number(id));
 
-      const ApiVersion = await readFile(logFilePath, "utf-8");
+    const ApiVersion = await readFile(logFilePath, "utf-8");
 
-      return result
-        ? res.json({ msg: "Evento actualizado", apiversion: ApiVersion })
-        : res.json({ msg: "Evento no actualizado" }).status(404);
-    } else {
-      return res.json({ msg: "Ese evento no existe" });
-    }
+    return result
+      ? res.json({ msg: "Evento actualizado", apiversion: ApiVersion })
+      : res.status(404).json({ msg: "Evento no actualizado" });
   } catch (error) {
     console.error("se obtuvo un error", error);
     res.status(500).json({ msg: "Error interno" });
@@ -172,7 +149,7 @@ loadSubscribedEvents().then((data) => (subscribedEvents = data));
 
 export const getSubscribedEvents: any = async (req: Request, res: Response) => {
   return res.json(subscribedEvents);
-  
+
 }
 
 export const subscribeToAnEvent: any = async (req: Request, res: Response) => {
