@@ -8,6 +8,7 @@ import { UpdateAnEventUsecase } from "../Domain/Usecases/EventUsecases/UpdateAnE
 import { DeleteAnEventUsecase } from "../Domain/Usecases/EventUsecases/DeleteAnEventUsecase.js";
 import { GetEventsUsecase } from "../Domain/Usecases/EventUsecases/GetEventsUsecase.js";
 import { UnSuscribeFromAnEventUsecase } from "../Domain/Usecases/EventUsecases/UnSubscribeFromAnEventUsecase.js";
+import { loadSubscribedEvents, saveSubscribedEvents } from "../Utils/subscriptions.js";
 import { readFile } from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -89,56 +90,33 @@ export const registerEvent: any = async (req: Request, res: Response) => {
 export const updateEvent: any = async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const {
-    eventid,
-    title,
-    description,
-    attendees,
-    avgScore,
-    availableSpots,
-    category,
-    dateTime,
-    location,
-    numberReviews,
-    sessionOrder,
-    speakerAvatar,
-    speakerName,
-    status,
-    tags,
-  } = req.body;
-
   try {
-    const event: myEvent = {
-      eventid,
-      title,
-      description,
-      attendees,
-      avgScore,
-      availableSpots,
-      category,
-      dateTime: new Date(dateTime),
-      location,
-      numberReviews,
-      sessionOrder,
-      speakerAvatar,
-      speakerName,
-      status,
-      tags,
+    const existingEvent = await ThisEventExistsUsecase.call(Number(id));
+    if (!existingEvent) {
+      return res.status(404).json({ msg: "Ese evento no existe" });
+    }
+
+    // Obtener los datos actuales del evento
+    const currentEvent = await GetEventsUsecase.call(Number(id));
+    if (!currentEvent) {
+      return res.status(404).json({ msg: "No se pudo obtener el evento actual" });
+    }
+
+    // Actualizar solo los campos enviados en el cuerpo de la solicitud
+    const updatedEvent = {
+      ...currentEvent, // Mantener los valores actuales
+      ...req.body, // Sobrescribir con los valores enviados
+      dateTime: req.body.dateTime ? new Date(req.body.dateTime) : currentEvent.dateTime,
     };
 
-    const exists = await ThisEventExistsUsecase.call(Number(id));
 
-    if (exists) {
-      const result = await UpdateAnEventUsecase.call(event, Number(id));
+    const result = await UpdateAnEventUsecase.call(updatedEvent, Number(id));
 
-      const ApiVersion = await readFile(logFilePath, "utf-8");
+    const ApiVersion = await readFile(logFilePath, "utf-8");
 
-      return result
-        ? res.json({ msg: "Evento actualizado", apiversion: ApiVersion })
-        : res.json({ msg: "Evento no actualizado" }).status(404);
-    } else {
-      return res.json({ msg: "Ese evento no existe" });
-    }
+    return result
+      ? res.json({ msg: "Evento actualizado", apiversion: ApiVersion })
+      : res.status(404).json({ msg: "Evento no actualizado" });
   } catch (error) {
     console.error("se obtuvo un error", error);
     res.status(500).json({ msg: "Error interno" });
@@ -166,6 +144,14 @@ export const deleteEvent: any = async (req: Request, res: Response) => {
   }
 };
 
+let subscribedEvents: number[] = [];
+loadSubscribedEvents().then((data) => (subscribedEvents = data));
+
+export const getSubscribedEvents: any = async (req: Request, res: Response) => {
+  return res.json(subscribedEvents);
+
+}
+
 export const subscribeToAnEvent: any = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
@@ -174,6 +160,10 @@ export const subscribeToAnEvent: any = async (req: Request, res: Response) => {
     if (exists) {
       const result = await SuscribeToAnEventUsecase.call(Number(id));
       const ApiVersion = await readFile(logFilePath, "utf-8");
+      if (result && !subscribedEvents.includes(Number(id))) {
+        subscribedEvents.push(Number(id));
+        await saveSubscribedEvents(subscribedEvents);
+      }
 
       return result
         ? res.json({ msg: "Subscrito correctamente", apiVersion: ApiVersion })
@@ -196,6 +186,12 @@ export const unSubscribeFromAnEvent: any = async (
     const exists = await ThisEventExistsUsecase.call(Number(id));
     if (exists) {
       const result = await UnSuscribeFromAnEventUsecase.call(Number(id));
+      if (result) {
+        subscribedEvents = subscribedEvents.filter(
+          (event) => event !== Number(id)
+        );
+        await saveSubscribedEvents(subscribedEvents);
+      }
 
       const ApiVersion = await readFile(logFilePath, "utf-8");
 
@@ -210,4 +206,64 @@ export const unSubscribeFromAnEvent: any = async (
     console.error("Hubo un error", error);
     return res.json({ msg: "Error interno" });
   }
+};
+
+export const checkEventStatus: any = async (req: Request, res: Response) => {
+  const {id} = req.params
+  try {
+    const events = await GetEventsUsecase.call(Number(id));
+
+    if (!events || events.length === 0) {
+      return res.status(404).json({ msg: "No hay eventos para verificar" });
+    }
+
+    const now = new Date();
+    const updatedEvents = [];
+
+    for (const event of events) {
+      // Reasignar los atributos del evento al formato esperado
+      const updatedEvent = transformToMyEvent(event);
+      console.log("Verificando " + updatedEvent.title);
+
+      // Verificar si la fecha ya pasó y actualizar el estado
+      if (new Date(updatedEvent.dateTime).getTime() < now.getTime() && updatedEvent.status !== "Finalizado") {
+        updatedEvent.status = "Finalizado";
+        console.log("Estado actualizado");
+        await UpdateAnEventUsecase.call(updatedEvent, updatedEvent.eventid); // Actualizar el evento
+        updatedEvents.push({
+          eventid: updatedEvent.eventid,
+          title: updatedEvent.title,
+          status: updatedEvent.status,
+        });
+      }
+    }
+
+    return res.json({
+      msg: "Estados de eventos verificados",
+      updatedEvents,
+    });
+  } catch (error) {
+    console.error("Error al verificar el estado de los eventos", error);
+    res.status(500).json({ msg: "Error interno" });
+  }
+};
+
+const transformToMyEvent = (event: any): myEvent => {
+  return {
+    eventid: event.eventid,
+    title: event.title,
+    category: event.category,
+    location: event.location_,
+    dateTime: new Date(event.datetime), // Convertir a Date
+    attendees: event.attendees,
+    availableSpots: event.availablespots, // Reasignar
+    description: event.description,
+    speakerName: event.speakername, // Reasignar
+    speakerAvatar: event.speakeravatar, // Reasignar
+    sessionOrder: event.sessionorder, // Convertir de string a JSON
+    tags: event.tags,
+    avgScore: event.avgscore, // Reasignar
+    numberReviews: event.numberreviews, // Reasignar
+    status: event.status as "Por empezar" | "Finalizado", // Asegurar el tipo
+  };
 };

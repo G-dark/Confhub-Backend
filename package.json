@@ -8,7 +8,8 @@
     "test": "node --trace-warnings --experimental-vm-modules node_modules/jest/bin/jest.js",
     "build": "npx tsc",
     "start": "node dist/App/app.js",
-    "dev": "nodemon --exec ts-node --esm src/App/app.ts"
+    "dev": "nodemon --exec ts-node --esm src/App/app.ts",
+    "setup-db": "node \"Create and poblate DB/setup-database.js\""
   },
   "keywords": [
     "Conferencias"
