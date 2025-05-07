@@ -23,7 +23,7 @@ app.use(cors());
 app.use(events);
 app.use(feedbacks);
 
-app.get("/Apiversion", async (req: Request, res: Response) => {
+app.get("/apiVersion", async (req: Request, res: Response) => {
   const apiVersion = await readFile(logFilePath, "utf-8");
 
   return res.status(200).json({ apiVersion });

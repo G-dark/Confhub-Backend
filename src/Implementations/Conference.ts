@@ -30,7 +30,6 @@ export class Conference implements IEvent {
 
     const avgScore = scoresSum / (event.numberreviews + action);
 
-    console.log(avgScore, event.numberreviews + action, action, event)
     const result2 = await Database.updateAField(
       "events",
       "avgscore",

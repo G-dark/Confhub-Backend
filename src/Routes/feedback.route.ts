@@ -26,4 +26,4 @@ feedbacks.patch("/api/feedbacks/undislike/:id", unDislikeAFeedback);
 feedbacks.patch("/api/feedbacks/answer/:id", answerAFeedback);
 feedbacks.delete("/api/feedbacks/:id", deleteAFeedback);
 
-export default feedbacks;
+export default feedbacks; 

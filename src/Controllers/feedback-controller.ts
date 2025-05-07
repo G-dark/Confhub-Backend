@@ -18,6 +18,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { UpdateReviewAvgScoreUsecase } from "../Domain/Usecases/EventUsecases/UpdateReviewScoresUseCase.js";
 
+
 // inicializaciones necesarias
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,7 +30,7 @@ export const getFeedbacks: any = async (req: Request, res: Response) => {
   try {
     const result = await GetFeedbacksUsecase.call(Number(id));
     return result.length > 0
-      ? res.json(result)
+      ? res.json(result.map((feedback:any)=>{return transformToFeedback(feedback)}))
       : res.json({ msg: "Sin feedbacks con ese id" }).status(404);
   } catch (error) {
     console.error("se obtuvo un error", error);
@@ -48,7 +49,7 @@ export const getFeedbacksFromEvent: any = async (
     if (exists) {
       const result = await GetFeedbacksFromEventUsecase.call(Number(id));
       return result.length > 0
-        ? res.json(result)
+        ? res.json(result.map((feedback:any)=>{return transformToFeedback(feedback)}))
         : res.json({ msg: "Sin feedbacks con ese id" }).status(404);
     } else {
       return res.json({ msg: "Ese evento no existe" });
@@ -103,34 +104,19 @@ export const deleteAFeedback: any = async (req: Request, res: Response) => {
 
 export const updateAFeedback: any = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const {
-    eventid,
-    comment,
-    title,
-    score,
-    likes,
-    dislikes,
-    answer,
-    feedbackid,
-    answerDateTime,
-  } = req.body;
+
   try {
     const exists = await ThisFeedbackExistsUsecase.call(Number(id));
     if (exists) {
+
+      const toUpdateFeed = transformToFeedback((await GetFeedbacksUsecase.call(Number(id)))[0]);
       const feedback: Feedback = {
-        eventid,
-        comment,
-        title,
-        score,
+        ...toUpdateFeed,
+        ...req.body,
         dateTime: new Date(Date.now()),
-        likes,
-        dislikes,
-        answer,
-        id: feedbackid,
-        answerDateTime,
       };
       const result = await UpdateAFeedbackUsecase.call(feedback, Number(id));
-      const result2 = await UpdateReviewAvgScoreUsecase.call(eventid,0);
+      const result2 = await UpdateReviewAvgScoreUsecase.call(toUpdateFeed.eventid,0);
       const ApiVersion = await readFile(logFilePath, "utf-8");
       return result && result2
         ? res.json({ msg: "Feedback actualizado", apiVersion: ApiVersion })
@@ -149,8 +135,6 @@ export const makeAFeedback: any = async (req: Request, res: Response) => {
     comment,
     title,
     score,
-    likes,
-    dislikes,
     answer,
     answerDateTime,
   } = req.body;
@@ -168,8 +152,8 @@ export const makeAFeedback: any = async (req: Request, res: Response) => {
         title,
         score,
         dateTime: new Date(Date.now()),
-        likes,
-        dislikes,
+        likes:0,
+        dislikes:0,
         answer,
         id,
         answerDateTime,
@@ -177,9 +161,8 @@ export const makeAFeedback: any = async (req: Request, res: Response) => {
       const result = await MakeAFeedbackUsecase.call(feedback);
       const result2 = await UpdateReviewAvgScoreUsecase.call(eventid,1);
       const ApiVersion = await readFile(logFilePath, "utf-8");
-
-      return result & result2
-        ? res.json({ msg: "Feedback registrado", apiVersion: ApiVersion })
+      return result && result2
+        ? res.json({ msg: "Feedback registrado", apiVersion: ApiVersion, feedbackMade:result })
         : res.json({ msg: "Feedback no registrado" });
     } else {
       return res.json({ msg: "Ese evento no existe" });
@@ -265,3 +248,20 @@ export const unDislikeAFeedback: any = async (req: Request, res: Response) => {
     return res.status(500).json({ msg: "Error interno" });
   }
 };
+
+const transformToFeedback = (feedback:any):Feedback =>{
+  const feedbackResponse: Feedback = {
+    id:Number(feedback.id_),
+    eventid: feedback.eventid,
+    comment:feedback.comment_,
+    title:feedback.title,
+    score:feedback.score,
+    likes:feedback.likes,
+    dislikes: feedback.dislikes,
+    answer:feedback.answer,
+    dateTime:feedback.datetime,
+    answerDateTime:feedback.answerdatetime
+  }
+
+  return feedbackResponse
+}
