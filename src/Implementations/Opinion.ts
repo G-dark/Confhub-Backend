@@ -72,8 +72,14 @@ export class Opinion implements IFeedback {
 
     return result;
   }
-  async makeAFeedback(feedback: Feedback): Promise<boolean> {
-    return await Database.register("feedbacks", feedback);
+  async makeAFeedback(feedback: Feedback): Promise<any> {
+    const result = await Database.register("feedbacks", feedback);
+
+    if (result) {
+      return feedback;
+    } else {
+      return result
+    }
   }
   async deleteAFeedback(feedbackid: Number): Promise<boolean> {
     return await Database.delete(feedbackid, "feedbacks", "id_");
