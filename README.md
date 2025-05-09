@@ -23,6 +23,15 @@ DB_PORT=5432
 USER=postgres 
 PASSWORD=YOUR_PASSWORD 
 ```
+## Setup and poblate the database 
+
+Exists a folder with the name of Create and poblate DB once you have postgre installed you've just do: 
+
+```bash
+node setup-database.js
+```
+in the path of that folder 
+
 ## Usage
 
 if you want to start the project, you can run any of the following scripts
