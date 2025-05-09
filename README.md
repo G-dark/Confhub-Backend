@@ -32,6 +32,12 @@ node setup-database.js
 ```
 in the path of that folder 
 
+or simply you can do: 
+
+```bash
+npm run setup-db
+```
+
 ## Usage
 
 if you want to start the project, you can run any of the following scripts
