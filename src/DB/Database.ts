@@ -267,7 +267,7 @@ export class Database {
 
     const result = await pool.query(query);
 
-    return result;
+    return !!result;
   };
 
   static idExists: any = async (

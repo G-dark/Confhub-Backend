@@ -30,13 +30,27 @@ export class Conference implements IEvent {
 
     const avgScore = scoresSum / (event.numberreviews + action);
 
-    const result2 = await Database.updateAField(
-      "events",
-      "avgscore",
-      "eventid",
-      avgScore,
-      eventid
-    );
+    let result2 = true;
+
+    if (result1) {
+      result2 = await Database.updateAField(
+        "events",
+        "avgscore",
+        "eventid",
+        avgScore,
+        eventid
+      );
+    }
+
+    if(!result2){
+      await Database.updateAField(
+        "events",
+        "numberreviews",
+        "eventid",
+        event.numberreviews - action,
+        eventid
+      );
+    }
 
     return result1 && result2;
   }
@@ -65,13 +79,27 @@ export class Conference implements IEvent {
       event.attendees + 1,
       eventid
     );
-    const result2 = await Database.updateAField(
-      "events",
-      "availableSpots",
-      "eventid",
-      event.availablespots - 1,
-      eventid
-    );
+    let result2 = true;
+    // no go ahead in case of fail of the first action
+    if (result1) {
+      result2 = await Database.updateAField(
+        "events",
+        "availableSpots",
+        "eventid",
+        event.availablespots - 1,
+        eventid
+      );
+    }
+
+    if ( !result2) {
+      await Database.updateAField(
+        "events",
+        "attendees",
+        "eventid",
+        event.attendees - 1,
+        eventid
+      );
+    }
 
     return result1 && result2;
   }
@@ -85,13 +113,30 @@ export class Conference implements IEvent {
       event.attendees - 1,
       eventid
     );
-    const result2 = await Database.updateAField(
-      "events",
-      "availableSpots",
-      "eventid",
-      event.availablespots + 1,
-      eventid
-    );
+
+    let result2 = true;
+
+    // no go ahead in case of fail of the first action
+    if (result1) {
+      result2 = await Database.updateAField(
+        "events",
+        "availableSpots",
+        "eventid",
+        event.availablespots + 1,
+        eventid
+      );
+    }
+
+    if ( !result2 ) {
+      // go back in case the second action doesn't complete
+      await Database.updateAField(
+        "events",
+        "attendees",
+        "eventid",
+        event.attendees + 1,
+        eventid
+      );
+    }
 
     return result1 && result2;
   }

@@ -5,13 +5,13 @@ import { IFeedback } from "../Domain/Interfaces/IFeedback.js";
 export class Opinion implements IFeedback {
   Opinion() {}
 
-  async getFeedbacksFromEvent(eventid: number): Promise<boolean> {
+  async getFeedbacksFromEvent(eventid: number): Promise<any> {
     return await Database.read(eventid, "feedbacks", "eventid");
   }
   async thisFeedbackExists(feedbackid: number): Promise<boolean> {
     return await Database.idExists(feedbackid, "feedbacks", "id_");
   }
-  async getFeedbacks(feedbackid: number): Promise<boolean> {
+  async getFeedbacks(feedbackid: number): Promise<any> {
     return await Database.read(feedbackid, "feedbacks", "id_");
   }
   async updateAFeedback(
@@ -78,7 +78,7 @@ export class Opinion implements IFeedback {
     if (result) {
       return feedback;
     } else {
-      return result
+      return result;
     }
   }
   async deleteAFeedback(feedbackid: Number): Promise<boolean> {
@@ -93,13 +93,29 @@ export class Opinion implements IFeedback {
       feedbackid
     );
 
-    const result2 = await Database.updateAField(
-      "feedbacks",
-      "answerdatetime",
-      "id_",
-      new Date(Date.now()).toISOString(),
-      feedbackid
-    );
+    let result2 = true;
+    if (result) {
+      result2 = await Database.updateAField(
+        "feedbacks",
+        "answerdatetime",
+        "id_",
+        new Date(Date.now()).toISOString(),
+        feedbackid
+      );
+    }
+
+    if(!result2){
+
+      await Database.updateAField(
+        "feedbacks",
+        "answer",
+        "id_",
+        null,
+        feedbackid
+      );
+
+    }
+
     return result && result2;
   }
 }
