@@ -58,40 +58,41 @@ Create - Post
 baseURl/api/events
 
 ---valid input </br>
-{ </br>
-    "title": "Buenas prácticas de programación en Java",</br>
-        "category": "Desarrollo",</br>
-        "location": "Risaralda, Colombia",</br>
-        "dateTime": "2025-08-26T11:00:00.000Z",</br>
-        "attendees": 13,</br>
-        "availableSpots": 120,</br>
-        "description": "Conoce técnicas y principios que te ayudarán a escribir código más limpio, legible y mantenible en Java.",</br>
-        "speakerName": "Felipe Montero",</br>
-        "speakerAvatar": "https://avatar.iran.liara.run/username?username=Felipe+Romero",</br>
-        "sessionOrder": \[</br>
+```json
+{ 
+    "title": "Buenas prácticas de programación en Java",
+        "category": "Desarrollo",
+        "location": "Risaralda, Colombia",
+        "dateTime": "2025-08-26T11:00:00.000Z",
+        "attendees": 13,
+        "availableSpots": 120,
+        "description": "Conoce técnicas y principios que te ayudarán a escribir código más limpio, legible y mantenible en Java.",
+        "speakerName": "Felipe Montero",
+        "speakerAvatar": "https://avatar.iran.liara.run/username?username=Felipe+Romero",
+        "sessionOrder": [
             {</br>
-                "name": "Principios SOLID",</br>
-                "duration": 30</br>
-            },</br>
+                "name": "Principios SOLID",
+                "duration": 30
+            },
+            {
+                "name": "Clean Code",
+                "duration": 25
+            },
             {</br>
-                "name": "Clean Code",</br>
-                "duration": 25</br>
-            },</br>
-            {</br>
-                "name": "Refactorización y patrones",</br>
-                "duration": 30</br>
-            }</br>
-        ],</br>
-        "tags": \[</br>
-            "Java",</br>
+                "name": "Refactorización y patrones",
+                "duration": 30
+            }
+        ],
+        "tags": [
+            "Java",
             "Clean Code",
-            "Buenas prácticas"</br>
-        ],</br>
-        "avgScore": 0,</br>
-        "numberReviews": 0,</br>
-        "status": "Por empezar"</br>
-}</br>
-
+            "Buenas prácticas"
+        ],
+        "avgScore": 0,
+        "numberReviews": 0,
+        "status": "Por empezar"
+}
+```
 Delete - Delete
 baseURl/api/events/\[id]
 
@@ -99,40 +100,41 @@ Update - Patch
 baseURl/api/events/\[id]
 
 ---valid input </br>
-{ </br>
-    "title": "Buenas prácticas de programación en Javascript",</br>
-        "category": "Desarrollo web",</br>
-        "location": "Malambo, Colombia",</br>
-        "dateTime": "2025-08-26T11:00:00.000Z",</br>
-        "attendees": 13,</br>
-        "availableSpots": 120,</br>
-        "description": "Conoce técnicas y principios que te ayudarán a escribir código más limpio, legible y mantenible en Java.",</br>
-        "speakerName": "Felipe Montero",</br>
-        "speakerAvatar": "https://avatar.iran.liara.run/username?username=Felipe+Romero",</br>
-        "sessionOrder": \[</br>
-            {</br>
-                "name": "Principios SOLID",</br>
-                "duration": 30</br>
-            },</br>
-            {</br>
-                "name": "Clean Code",</br>
-                "duration": 25</br>
-            },</br>
-            {</br>
-                "name": "Refactorización y patrones",</br>
-                "duration": 30</br>
-            }</br>
-        ],</br>
-        "tags": \[</br>
-            "Java",</br>
+```json
+{ 
+    "title": "Buenas prácticas de programación en Javascript",
+        "category": "Desarrollo web",
+        "location": "Malambo, Colombia",
+        "dateTime": "2025-08-26T11:00:00.000Z",
+        "attendees": 13,
+        "availableSpots": 120,
+        "description": "Conoce técnicas y principios que te ayudarán a escribir código más limpio, legible y mantenible en Java.",
+        "speakerName": "Felipe Montero",
+        "speakerAvatar": "https://avatar.iran.liara.run/username?username=Felipe+Romero",
+        "sessionOrder": [
+            {
+                "name": "Principios SOLID",
+                "duration": 30
+            },
+            {
+                "name": "Clean Code",
+                "duration": 25
+            },
+            {
+                "name": "Refactorización y patrones",
+                "duration": 30
+            }
+        ],
+        "tags": [
+            "Java",
             "Clean Code",
-            "Buenas prácticas"</br>
-        ],</br>
-        "avgScore": 0,</br>
-        "numberReviews": 0,</br>
-        "status": "Por empezar"</br>
-}</br>
-
+            "Buenas prácticas"
+        ],
+        "avgScore": 0,
+        "numberReviews": 0,
+        "status": "Por empezar"
+}
+```
 # Feedbacks
 
 Read - Get all feedbacks
@@ -148,15 +150,16 @@ Create - Post
 baseURl/api/feedbacks
 
 ---valid input </br>
-  {</br>
-    "eventid": 83492175,</br>
-    "title": "Muy buen enfoque para expertos",</br>
-    "comment": "Este comentario destaca un punto importante del evento. Sin embargo, podría beneficiarse de más ejemplos concretos o aplicaciones prácticas que permitan entenderlo mejor.",</br>
-    "score": 4,</br>
-    "likes": 0,</br>
-    "dislikes": 0</br>
-  } </br>
-
+```json
+  {
+    "eventid": 83492175,
+    "title": "Muy buen enfoque para expertos",
+    "comment": "Este comentario destaca un punto importante del evento. Sin embargo, podría beneficiarse de más ejemplos concretos o aplicaciones prácticas que permitan entenderlo mejor.",
+    "score": 4,
+    "likes": 0,
+    "dislikes": 0
+  } 
+```
 Delete - Delete
 baseURl/api/feedbacks/\[id]
 
@@ -165,7 +168,9 @@ baseURl/api/feedbacks/\[id]
 
 fields that are not going to be updated can be omitted, for example: 
 ---valid input </br>
-  {</br>
-    "eventid": 83492175,</br>
-    "title": "Muy buen enfoque para expertos",</br>
-  } </br>
+```json
+  {
+    "eventid": 83492175,
+    "title": "Muy buen enfoque para expertos",
+  } 
+```
