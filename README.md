@@ -15,14 +15,14 @@ git clone <url-of-this-repository>
 
 After that you must make a .env file following the .env.example
 like this: 
-
-PORT=3000 </br>
-HOST=localhost </br>
-DB_NAME=confhub_db </br>
-DB_PORT=5432 </br>
-USER=postgres </br>
-PASSWORD=YOUR_PASSWORD </br>
-
+```dotenv
+PORT=3000 
+HOST=localhost 
+DB_NAME=confhub_db 
+DB_PORT=5432 
+USER=postgres 
+PASSWORD=YOUR_PASSWORD 
+```
 ## Usage
 
 if you want to start the project, you can run any of the following scripts
