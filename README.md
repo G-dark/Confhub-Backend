@@ -70,7 +70,7 @@ baseURl/api/events
         "speakerName": "Felipe Montero",
         "speakerAvatar": "https://avatar.iran.liara.run/username?username=Felipe+Romero",
         "sessionOrder": [
-            {</br>
+            {
                 "name": "Principios SOLID",
                 "duration": 30
             },
@@ -78,7 +78,7 @@ baseURl/api/events
                 "name": "Clean Code",
                 "duration": 25
             },
-            {</br>
+            {
                 "name": "Refactorización y patrones",
                 "duration": 30
             }
