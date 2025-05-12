@@ -10,6 +10,9 @@ const DB_NAME = process.env.DB_NAME;
 const DB_PORT = process.env.DB_PORT;
 const USER = process.env.USER;
 const PASSWORD = process.env.PASSWORD;
+export const JWT_SECRET_KEY= process.env.JWT_SECRET_KEY;
+export const PEPPER= process.env.PEPPER;
+export const SALT_OR_ROUNDS= Number(process.env.SALT_OR_ROUNDS) || 10;
 
  const poolConfig:any = {
   host: HOST,

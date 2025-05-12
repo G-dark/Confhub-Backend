@@ -8,10 +8,25 @@ import { UpdateAnEventUsecase } from "../Domain/Usecases/EventUsecases/UpdateAnE
 import { DeleteAnEventUsecase } from "../Domain/Usecases/EventUsecases/DeleteAnEventUsecase.js";
 import { GetEventsUsecase } from "../Domain/Usecases/EventUsecases/GetEventsUsecase.js";
 import { UnSuscribeFromAnEventUsecase } from "../Domain/Usecases/EventUsecases/UnSubscribeFromAnEventUsecase.js";
-import { loadSubscribedEvents, saveSubscribedEvents } from "../Utils/subscriptions.js";
+import {
+  loadSubscribedEvents,
+  saveSubscribedEvents,
+} from "../Utils/subscriptions.js";
 import { readFile } from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
+import { error } from "console";
+import { AuthRequest } from "../Middlewares/auth.js";
+import { MakeAnEventUsecase } from "../Domain/Usecases/EventUsecases/MakeAnEventUsecase.js";
+import { ThisSpeakerExistsUsecase } from "../Domain/Usecases/SpeakerUsecases/ThisSpeakerExistsUsecase.js";
+import { GetSpeakerUsecase } from "../Domain/Usecases/SpeakerUsecases/GetSpeakerUsecase.js";
+import { Speaker } from "../Domain/Entities/Speaker.js";
+import { transformToSpeaker } from "./speaker-controller.js";
+import { ThisAdminExistsUsecase } from "../Domain/Usecases/AdminUsecases/ThisAdminExistsUsecase.js";
+import { transformToAdmin } from "./admin-controller.js";
+import { GetAdminUsecase } from "../Domain/Usecases/AdminUsecases/GetAdminUsecase.js";
+import { UpdateProfileUsecase } from "../Domain/Usecases/AdminUsecases/UpdateProfileUsecase.js";
+import { UpdateAProfileUsecase } from "../Domain/Usecases/SpeakerUsecases/UpdateAProfileUsecase.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,14 +40,14 @@ export const getEvents: any = async (req: Request, res: Response) => {
 
     return result.length > 0
       ? res.json(result)
-      : res.json({ msg: "Sin eventos con ese id" }).status(404);
+      : res.status(404).json({ msg: "Sin eventos con ese id" }).status(404);
   } catch (error) {
     console.error("se obtuvo un error", error);
     res.status(500).json({ msg: "Error interno" });
   }
 };
 
-export const registerEvent: any = async (req: Request, res: Response) => {
+export const registerEvent: any = async (req: AuthRequest, res: Response) => {
   try {
     const {
       title,
@@ -74,73 +89,135 @@ export const registerEvent: any = async (req: Request, res: Response) => {
       status,
       tags,
     };
-    const conference = new Conference();
-    const result = await conference.makeAnEvent(event);
 
+    const email = req.user?.email;
+    let user, user2;
+    if (email && (await ThisSpeakerExistsUsecase.call(email))) {
+      user = transformToSpeaker(
+        ((await GetSpeakerUsecase.call(email)) as any)[0]
+      );
+    }
+
+    if (email && (await ThisAdminExistsUsecase.call(email))) {
+      user2 = transformToAdmin(((await GetAdminUsecase.call(email)) as any)[0]);
+    }
+
+    const result = await MakeAnEventUsecase.call(event);
+    if (user || user2 && result) {
+
+      if(email && user2 && req.user?.rol == "admin"){
+         user2.events?.push(eventid);
+        await UpdateProfileUsecase.call(user2,email)
+      } else if (email && user && req.user?.rol == "user"){
+        user.events?.push(eventid);
+        await UpdateAProfileUsecase.call(user,email)
+      }
+
+    }
     const ApiVersion = await readFile(logFilePath, "utf-8");
     return result
-      ? res.json({ msg: "Evento registrado", apiVersion: ApiVersion })
-      : res.json({ msg: "Evento no registrado" }).status(404);
+      ? res.json({ success: "Evento registrado", apiVersion: ApiVersion })
+      : res.status(444).json({ error: "Evento no registrado" }).status(404);
   } catch (error) {
     console.error("se obtuvo un error", error);
     res.status(500).json({ msg: "Error interno" });
   }
 };
 
-export const updateEvent: any = async (req: Request, res: Response) => {
+export const updateEvent: any = async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
 
-  try {
-    const existingEvent = await ThisEventExistsUsecase.call(Number(id));
-    if (!existingEvent) {
-      return res.status(404).json({ msg: "Ese evento no existe" });
+  const email = req.user?.email;
+  let user;
+  if (email && (await ThisSpeakerExistsUsecase.call(email))) {
+    user = transformToSpeaker(
+      ((await GetSpeakerUsecase.call(email)) as any)[0]
+    );
+  }
+
+  if (email && (await ThisAdminExistsUsecase.call(email))) {
+    user = transformToAdmin(((await GetAdminUsecase.call(email)) as any)[0]);
+  }
+
+  if ((user && user.events) && user.events.includes(Number(id)) || req.user?.rol == "admin") {
+    try {
+      const existingEvent = await ThisEventExistsUsecase.call(Number(id));
+      if (!existingEvent) {
+        return res.status(404).json({ error: "Ese evento no existe" });
+      }
+
+      // Obtener los datos actuales del evento
+      const currentEvent = await GetEventsUsecase.call(Number(id));
+      if (!currentEvent) {
+        return res
+          .status(404)
+          .json({ error: "No se pudo obtener el evento actual" });
+      }
+
+      // Actualizar solo los campos enviados en el cuerpo de la solicitud
+      const updatedEvent = {
+        ...currentEvent, // Mantener los valores actuales
+        ...req.body, // Sobrescribir con los valores enviados
+        dateTime: req.body.dateTime
+          ? new Date(req.body.dateTime)
+          : currentEvent.dateTime,
+      };
+
+      const result = await UpdateAnEventUsecase.call(updatedEvent, Number(id));
+
+      const ApiVersion = await readFile(logFilePath, "utf-8");
+
+      return result
+        ? res.json({ success: "Evento actualizado", apiversion: ApiVersion })
+        : res.status(444).json({ error: "Evento no actualizado" });
+    } catch (error) {
+      console.error("se obtuvo un error", error);
+      res.status(500).json({ error: "Error interno" });
     }
-
-    // Obtener los datos actuales del evento
-    const currentEvent = await GetEventsUsecase.call(Number(id));
-    if (!currentEvent) {
-      return res.status(404).json({ msg: "No se pudo obtener el evento actual" });
-    }
-
-    // Actualizar solo los campos enviados en el cuerpo de la solicitud
-    const updatedEvent = {
-      ...currentEvent, // Mantener los valores actuales
-      ...req.body, // Sobrescribir con los valores enviados
-      dateTime: req.body.dateTime ? new Date(req.body.dateTime) : currentEvent.dateTime,
-    };
-
-
-    const result = await UpdateAnEventUsecase.call(updatedEvent, Number(id));
-
-    const ApiVersion = await readFile(logFilePath, "utf-8");
-
-    return result
-      ? res.json({ msg: "Evento actualizado", apiversion: ApiVersion })
-      : res.status(404).json({ msg: "Evento no actualizado" });
-  } catch (error) {
-    console.error("se obtuvo un error", error);
-    res.status(500).json({ msg: "Error interno" });
+  } else {
+    res
+      .status(444)
+      .json({ error: "No puedes editar eventos que no son tuyos al menos que seas admin" });
   }
 };
 
-export const deleteEvent: any = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const exists = await ThisEventExistsUsecase.call(Number(id));
-    if (exists) {
-      const result = await DeleteAnEventUsecase.call(Number(id));
+export const deleteEvent: any = async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const email = req.user?.email;
+  let user;
+  if (email && (await ThisSpeakerExistsUsecase.call(email))) {
+    user = transformToSpeaker(
+      ((await GetSpeakerUsecase.call(email)) as any)[0]
+    );
+  }
 
-      const ApiVersion = readFile(logFilePath, "utf-8");
+  if (email && (await ThisAdminExistsUsecase.call(email))) {
+    user = transformToAdmin(((await GetAdminUsecase.call(email)) as any)[0]);
+  }
 
-      return result
-        ? res.json({ msg: "Evento eliminado", apiversion: ApiVersion })
-        : res.json({ msg: "No eliminado" }).status(404);
-    } else {
-      return res.json({ msg: "Ese evento no existe" });
+  if ((user && user.events) && user.events.includes(Number(id)) || req.user?.rol == "admin" ) {
+    try {
+      const exists = await ThisEventExistsUsecase.call(Number(id));
+      if (exists) {
+        const result = await DeleteAnEventUsecase.call(Number(id));
+
+        const ApiVersion = readFile(logFilePath, "utf-8");
+
+        return result
+          ? res.json({ success: "Evento eliminado", apiversion: ApiVersion })
+          : res.status(444).json({ error: "No eliminado" }).status(404);
+      } else {
+        return res.status(404).json({ error: "Ese evento no existe" });
+      }
+    } catch (error) {
+      console.error("se obtuvo un error", error);
+      res.status(500).json({ error: "Error interno" });
     }
-  } catch (error) {
-    console.error("se obtuvo un error", error);
-    res.status(500).json({ msg: "Error interno" });
+  } else {
+    res
+      .status(444)
+      .json({ error: "No puedes eliminar eventos que no son tuyos al menos que seas admin" })
+      .status(404);
   }
 };
 
@@ -149,8 +226,7 @@ loadSubscribedEvents().then((data) => (subscribedEvents = data));
 
 export const getSubscribedEvents: any = async (req: Request, res: Response) => {
   return res.json(subscribedEvents);
-
-}
+};
 
 export const subscribeToAnEvent: any = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -166,14 +242,17 @@ export const subscribeToAnEvent: any = async (req: Request, res: Response) => {
       }
 
       return result
-        ? res.json({ msg: "Subscrito correctamente", apiVersion: ApiVersion })
-        : res.json({ msg: "No subscrito" });
+        ? res.json({
+            success: "Subscrito correctamente",
+            apiVersion: ApiVersion,
+          })
+        : res.status(444).json({ error: "No subscrito" });
     } else {
-      return res.json({ msg: "Ese evento no existe" });
+      return res.status(404).json({ error: "Ese evento no existe" });
     }
   } catch (error) {
     console.error("Hubo un error", error);
-    return res.json({ msg: "Error interno" });
+    return res.status(500).json({ error: "Error interno" });
   }
 };
 
@@ -195,26 +274,28 @@ export const unSubscribeFromAnEvent: any = async (
 
       const ApiVersion = await readFile(logFilePath, "utf-8");
 
-
       return result
-        ? res.json({ msg: "Desubscrito correctamente", apiVersion: ApiVersion })
-        : res.json({ msg: "No desubscrito" });
+        ? res.json({
+            success: "Desubscrito correctamente",
+            apiVersion: ApiVersion,
+          })
+        : res.status(444).json({ error: "No desubscrito" });
     } else {
-      return res.json({ msg: "Ese evento no existe" });
+      return res.status(404).json({ error: "Ese evento no existe" });
     }
   } catch (error) {
     console.error("Hubo un error", error);
-    return res.json({ msg: "Error interno" });
+    return res.status(500).json({ error: "Error interno" });
   }
 };
 
 export const checkEventStatus: any = async (req: Request, res: Response) => {
-  const {id} = req.params
+  const { id } = req.params;
   try {
     const events = await GetEventsUsecase.call(Number(id));
 
     if (!events || events.length === 0) {
-      return res.status(404).json({ msg: "No hay eventos para verificar" });
+      return res.status(404).json({ error: "No hay eventos para verificar" });
     }
 
     const now = new Date();
@@ -226,7 +307,10 @@ export const checkEventStatus: any = async (req: Request, res: Response) => {
       console.log("Verificando " + updatedEvent.title);
 
       // Verificar si la fecha ya pasó y actualizar el estado
-      if (new Date(updatedEvent.dateTime).getTime() < now.getTime() && updatedEvent.status !== "Finalizado") {
+      if (
+        new Date(updatedEvent.dateTime).getTime() < now.getTime() &&
+        updatedEvent.status !== "Finalizado"
+      ) {
         updatedEvent.status = "Finalizado";
         console.log("Estado actualizado");
         await UpdateAnEventUsecase.call(updatedEvent, updatedEvent.eventid); // Actualizar el evento
@@ -239,12 +323,12 @@ export const checkEventStatus: any = async (req: Request, res: Response) => {
     }
 
     return res.json({
-      msg: "Estados de eventos verificados",
+      success: "Estados de eventos verificados",
       updatedEvents,
     });
   } catch (error) {
     console.error("Error al verificar el estado de los eventos", error);
-    res.status(500).json({ msg: "Error interno" });
+    res.status(500).json({ error: "Error interno" });
   }
 };
 

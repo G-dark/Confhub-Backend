@@ -5,4 +5,5 @@ import { ISpeaker } from "./ISpeaker.js";
 export interface IAdmin extends ISpeaker{
     updateProfile(admin:Admin,email:string): Promise<boolean>;
     makeAProfile(admin:Admin):Promise<boolean>;
+    getAccount(email:string):Promise<Admin>;
 }
