@@ -7,6 +7,8 @@ import updateApiVersion from "../Middlewares/update-version.js";
 import { readFile } from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
+import admins from "../Routes/admin.route.js";
+import speakers from "../Routes/speaker.route.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,13 +25,16 @@ app.use(cors());
 // routes
 app.use(events);
 app.use(feedbacks);
+app.use(admins);
+app.use(speakers);
 
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  }));
-
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.get("/apiVersion", async (req: Request, res: Response) => {
   const apiVersion = await readFile(logFilePath, "utf-8");
@@ -39,7 +44,7 @@ app.get("/apiVersion", async (req: Request, res: Response) => {
 
 // fallback
 app.use(async (req: Request, res: Response) => {
-  res.status(404).json({ msg: "Not found" });
+  res.status(404).json({ error: "Not found" });
 });
 
 app.listen(PORT, () => {

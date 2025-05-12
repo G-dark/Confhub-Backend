@@ -69,8 +69,8 @@ export class Database {
 
     if (!("rol" in registered) && "firstName" in registered) {
       const query = {
-        text: `insert into ${table} (firstname,lastname,email,events,passwrd)
-          values($1, $2, $3, $4, $5)`,
+        text: `insert into ${table} (firstname,lastname,email,events,passwrd,image)
+          values($1, $2, $3, $4, $5, $6)`,
 
         values: [
           registered.firstName,
@@ -78,6 +78,7 @@ export class Database {
           registered.email,
           registered.events,
           registered.password,
+          registered.image,
         ],
       };
       result = await pool.query(query);
@@ -85,8 +86,8 @@ export class Database {
 
     if ("rol" in registered) {
       const query = {
-        text: `insert into ${table} (firstname,lastname,email,events,passwrd,rol)
-            values($1, $2, $3, $4, $5, $6)`,
+        text: `insert into ${table} (firstname,lastname,email,events,passwrd,rol,image)
+            values($1, $2, $3, $4, $5, $6, $7)`,
 
         values: [
           registered.firstName,
@@ -95,9 +96,10 @@ export class Database {
           registered.events,
           registered.password,
           registered.rol,
+          registered.image
         ],
       };
-      const result = await pool.query(query);
+       result = await pool.query(query);
     }
     return !!result;
   }
@@ -191,7 +193,7 @@ export class Database {
     if (!("rol" in updated) && "firstName" in updated) {
       const query = {
         text: `update ${table} SET firstname = $1, lastname = $2, email= $3,
-            events = $4,passwrd = $5 where ${fieldName} = $6`,
+            events = $4,passwrd = $5, image = $6 where ${fieldName} = $7`,
 
         values: [
           updated.firstName,
@@ -199,6 +201,7 @@ export class Database {
           updated.email,
           updated.events,
           updated.password,
+          updated.image,
           updated.email,
         ],
       };
@@ -208,7 +211,7 @@ export class Database {
     if ("rol" in updated) {
       const query = {
         text: `update ${table} SET firstname = $1, lastname = $2, email= $3,
-            events = $4,passwrd = $5, rol = $6 where ${fieldName} = $7`,
+            events = $4,passwrd = $5, rol = $6, image = $7 where ${fieldName} = $8`,
 
         values: [
           updated.firstName,
@@ -217,6 +220,7 @@ export class Database {
           updated.events,
           updated.password,
           updated.rol,
+          updated.image,
           updated.email,
         ],
       };

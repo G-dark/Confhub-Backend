@@ -31,10 +31,10 @@ export const getFeedbacks: any = async (req: Request, res: Response) => {
     const result = await GetFeedbacksUsecase.call(Number(id));
     return result.length > 0
       ? res.json(result.map((feedback:any)=>{return transformToFeedback(feedback)}))
-      : res.json({ msg: "Sin feedbacks con ese id" }).status(404);
+      : res.status(404).json({ error: "Sin feedbacks con ese id" }).status(404);
   } catch (error) {
     console.error("se obtuvo un error", error);
-    res.status(500).json({ msg: "Error interno" });
+    res.status(500).json({ error: "Error interno" });
   }
 };
 
@@ -50,13 +50,13 @@ export const getFeedbacksFromEvent: any = async (
       const result = await GetFeedbacksFromEventUsecase.call(Number(id));
       return result.length > 0
         ? res.json(result.map((feedback:any)=>{return transformToFeedback(feedback)}))
-        : res.json({ msg: "Sin feedbacks con ese id" }).status(404);
+        : res.status(444).json({ error: "Sin feedbacks con ese id" }).status(404);
     } else {
-      return res.json({ msg: "Ese evento no existe" });
+      return res.status(404).json({ error: "Ese evento no existe" });
     }
   } catch (error) {
     console.error("se obtuvo un error", error);
-    res.status(500).json({ msg: "Error interno" });
+    res.status(500).json({ error: "Error interno" });
   }
 };
 
@@ -70,14 +70,14 @@ export const answerAFeedback: any = async (req: Request, res: Response) => {
 
       const ApiVersion = await readFile(logFilePath, "utf-8");
       return result
-        ? res.json({ msg: "Respuesta guardada", apiVersion: ApiVersion })
-        : res.json({ msg: "Respuesta no guardada" });
+        ? res.json({ success: "Respuesta guardada", apiVersion: ApiVersion })
+        : res.status(444).json({ error: "Respuesta no guardada" });
     } else {
-      return res.json({ msg: "Ese feedback no existe" }).status(404);
+      return res.status(404).json({ error: "Ese feedback no existe" }).status(404);
     }
   } catch (error) {
     console.error("Se ha obtenido un error", error);
-    return res.status(500).json({ msg: "Error interno" });
+    return res.status(500).json({ error: "Error interno" });
   }
 };
 
@@ -91,14 +91,14 @@ export const deleteAFeedback: any = async (req: Request, res: Response) => {
       const result2 = await UpdateReviewAvgScoreUsecase.call(feedback.eventid,-1);
       const ApiVersion = await readFile(logFilePath, "utf-8");
       return result && result2
-        ? res.json({ msg: "Feedback eliminado", apiVersion: ApiVersion })
-        : res.json({ msg: "Feedback no eliminado" });
+        ? res.json({ success: "Feedback eliminado", apiVersion: ApiVersion })
+        : res.status(444).json({ error: "Feedback no eliminado" });
     } else {
-      return res.json({ msg: "Ese feedback no existe" }).status(404);
+      return res.status(404).json({ error: "Ese feedback no existe" }).status(404);
     }
   } catch (error) {
     console.error("Se ha obtenido un error", error);
-    return res.status(500).json({ msg: "Error interno" });
+    return res.status(500).json({ error: "Error interno" });
   }
 };
 
@@ -119,14 +119,14 @@ export const updateAFeedback: any = async (req: Request, res: Response) => {
       const result2 = await UpdateReviewAvgScoreUsecase.call(toUpdateFeed.eventid,0);
       const ApiVersion = await readFile(logFilePath, "utf-8");
       return result && result2
-        ? res.json({ msg: "Feedback actualizado", apiVersion: ApiVersion })
-        : res.json({ msg: "Feedback no actualizado" });
+        ? res.json({ success: "Feedback actualizado", apiVersion: ApiVersion })
+        : res.status(444).json({ error: "Feedback no actualizado" });
     } else {
-      return res.json({ msg: "Ese feedback no existe" }).status(404);
+      return res.status(404).json({ error: "Ese feedback no existe" }).status(404);
     }
   } catch (error) {
     console.error("Se ha obtenido un error", error);
-    return res.status(500).json({ msg: "Error interno" });
+    return res.status(500).json({ error: "Error interno" });
   }
 };
 export const makeAFeedback: any = async (req: Request, res: Response) => {
@@ -162,14 +162,14 @@ export const makeAFeedback: any = async (req: Request, res: Response) => {
       const result2 = await UpdateReviewAvgScoreUsecase.call(eventid,1);
       const ApiVersion = await readFile(logFilePath, "utf-8");
       return result && result2
-        ? res.json({ msg: "Feedback registrado", apiVersion: ApiVersion, feedbackMade:result })
-        : res.json({ msg: "Feedback no registrado" });
+        ? res.json({ success: "Feedback registrado", apiVersion: ApiVersion, feedbackMade:result })
+        : res.status(444).json({ error: "Feedback no registrado" });
     } else {
-      return res.json({ msg: "Ese evento no existe" });
+      return res.status(404).json({ error: "Ese evento no existe" });
     }
   } catch (error) {
     console.error("Se ha obtenido un error", error);
-    return res.status(500).json({ msg: "Error interno" });
+    return res.status(500).json({ error: "Error interno" });
   }
 };
 
@@ -182,14 +182,14 @@ export const likeAFeedback: any = async (req: Request, res: Response) => {
       const result = await LikeAFeedbackUsecase.call(Number(id));
       const ApiVersion = await readFile(logFilePath, "utf-8");
       return result
-        ? res.json({ msg: "Feedback likeado", apiVersion: ApiVersion })
-        : res.json({ msg: "Feedback no likeado" });
+        ? res.json({ success: "Feedback likeado", apiVersion: ApiVersion })
+        : res.status(444).json({ error: "Feedback no likeado" });
     } else {
-      return res.json({ msg: "Ese feedback no existe" }).status(404);
+      return res.status(404).json({ error: "Ese feedback no existe" }).status(404);
     }
   } catch (error) {
     console.error("Se ha obtenido un error", error);
-    return res.status(500).json({ msg: "Error interno" });
+    return res.status(500).json({ error: "Error interno" });
   }
 };
 export const unLikeAFeedback: any = async (req: Request, res: Response) => {
@@ -201,14 +201,14 @@ export const unLikeAFeedback: any = async (req: Request, res: Response) => {
 
      const ApiVersion = await readFile(logFilePath, "utf-8");
       return result
-        ? res.json({ msg: "Feedback deslikeado", apiVersion: ApiVersion })
-        : res.json({ msg: "Feedback no deslikeado" });
+        ? res.json({ success: "Feedback deslikeado", apiVersion: ApiVersion })
+        : res.status(444).json({ error: "Feedback no deslikeado" });
     } else {
-      return res.json({ msg: "Ese feedback no existe" }).status(404);
+      return res.status(404).json({ error: "Ese feedback no existe" }).status(404);
     }
   } catch (error) {
     console.error("Se ha obtenido un error", error);
-    return res.status(500).json({ msg: "Error interno" });
+    return res.status(500).json({ error: "Error interno" });
   }
 };
 export const dislikeAFeedback: any = async (req: Request, res: Response) => {
@@ -220,14 +220,14 @@ export const dislikeAFeedback: any = async (req: Request, res: Response) => {
 
       const ApiVersion = await readFile(logFilePath, "utf-8");
       return result
-        ? res.json({ msg: "Feedback dislikeado", apiVersion: ApiVersion })
-        : res.json({ msg: "Feedback no dislikeado" });
+        ? res.json({ success: "Feedback dislikeado", apiVersion: ApiVersion })
+        : res.status(444).json({ error: "Feedback no dislikeado" });
     } else {
-      return res.json({ msg: "Ese feedback no existe" }).status(404);
+      return res.status(404).json({ error: "Ese feedback no existe" }).status(404);
     }
   } catch (error) {
     console.error("Se ha obtenido un error", error);
-    return res.status(500).json({ msg: "Error interno" });
+    return res.status(500).json({ error: "Error interno" });
   }
 };
 export const unDislikeAFeedback: any = async (req: Request, res: Response) => {
@@ -238,19 +238,20 @@ export const unDislikeAFeedback: any = async (req: Request, res: Response) => {
       const result = await UnDislikeAFeedbackUsecase.call(Number(id));
       const ApiVersion = await readFile(logFilePath, "utf-8");
       return result
-        ? res.json({ msg: "Feedback desdislikeado", apiVersion: ApiVersion })
-        : res.json({ msg: "Feedback no desdislikeado" });
+        ? res.json({ success: "Feedback desdislikeado", apiVersion: ApiVersion })
+        : res.status(444).json({ error: "Feedback no desdislikeado" });
     } else {
-      return res.json({ msg: "Ese feedback no existe" }).status(404);
+      return res.status(404).json({ error: "Ese feedback no existe" }).status(404);
     }
   } catch (error) {
     console.error("Se ha obtenido un error", error);
-    return res.status(500).json({ msg: "Error interno" });
+    return res.status(500).json({ error: "Error interno" });
   }
 };
 
 const transformToFeedback = (feedback:any):Feedback =>{
-  const feedbackResponse: Feedback = {
+
+  return {
     id:Number(feedback.id_),
     eventid: feedback.eventid,
     comment:feedback.comment_,
@@ -263,5 +264,4 @@ const transformToFeedback = (feedback:any):Feedback =>{
     answerDateTime:feedback.answerdatetime
   }
 
-  return feedbackResponse
 }

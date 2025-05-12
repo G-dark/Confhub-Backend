@@ -1,4 +1,4 @@
-import pkg from 'pg';
+import pkg from "pg";
 const { Client } = pkg;
 import { config } from "dotenv";
 config();
@@ -12,7 +12,7 @@ async function setupDatabase() {
   const USER = process.env.USER || "postgres";
   const PASSWORD = process.env.PASSWORD || "tu_password";
 
-    console.log("Configurando la base de datos...");
+  console.log("Configurando la base de datos...");
   // Configuración del cliente inicial para conectarse a la base 'postgres'
   const client = new Client({
     user: USER,
@@ -94,10 +94,11 @@ async function setupDatabase() {
 (
     firstname text COLLATE pg_catalog."default",
     lastname text COLLATE pg_catalog."default",
-    email text COLLATE pg_catalog."default",
+    email text COLLATE pg_catalog."default" NOT NULL,
     passwrd text COLLATE pg_catalog."default" NOT NULL,
     events integer[],
-    CONSTRAINT speakers_pkey PRIMARY KEY (passwrd)
+    image text COLLATE pg_catalog."default",
+    CONSTRAINT speakers_pk PRIMARY KEY (email)
 );
        `);
     await dbClient.query(`
@@ -108,6 +109,8 @@ CREATE TABLE admins
     email text COLLATE pg_catalog."default" NOT NULL,
     passwrd text COLLATE pg_catalog."default",
     rol boolean,
+    events integer[],
+    image text COLLATE pg_catalog."default",
     CONSTRAINT admins_pkey PRIMARY KEY (email)
 )
        `);
