@@ -21,7 +21,8 @@ export class Teller implements ISpeaker {
     return await Database.idExists(email, "speakers", "email");
   }
   async getAccount(email: string): Promise<Speaker> {
-    return await Database.read(email, "speakers", "email");
+
+    return await Database.readSpeaker(email);
   }
   async updateProfile(speaker: Speaker, email: string): Promise<boolean> {
     if (speaker.password) {
@@ -38,7 +39,7 @@ export class Teller implements ISpeaker {
 
   async makeAProfile(speaker: Speaker): Promise<boolean> {
     speaker.password = await bcrypt.hash(
-      speaker.password + PEPPER,
+       speaker.password + PEPPER,
       SALT_OR_ROUNDS
     );
     return await Database.register("speakers", speaker);

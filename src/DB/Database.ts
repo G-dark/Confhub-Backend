@@ -96,10 +96,10 @@ export class Database {
           registered.events,
           registered.password,
           registered.rol,
-          registered.image
+          registered.image,
         ],
       };
-       result = await pool.query(query);
+      result = await pool.query(query);
     }
     return !!result;
   }
@@ -192,37 +192,62 @@ export class Database {
 
     if (!("rol" in updated) && "firstName" in updated) {
       const query = {
-        text: `update ${table} SET firstname = $1, lastname = $2, email= $3,
-            events = $4,passwrd = $5, image = $6 where ${fieldName} = $7`,
+        text: updated.password
+          ? `update ${table} SET firstname = $1, lastname = $2, email= $3,
+            events = $4,passwrd = $5, image = $6 where ${fieldName} = $7`
+          : `update ${table} SET firstname = $1, lastname = $2, email= $3,
+            events = $4, image = $5 where ${fieldName} = $6`,
 
-        values: [
-          updated.firstName,
-          updated.lastName,
-          updated.email,
-          updated.events,
-          updated.password,
-          updated.image,
-          updated.email,
-        ],
+        values: updated.password
+          ? [
+              updated.firstName,
+              updated.lastName,
+              updated.email,
+              updated.events,
+              updated.password,
+              updated.image,
+              updated.email,
+            ]
+          : [
+              updated.firstName,
+              updated.lastName,
+              updated.email,
+              updated.events,
+              updated.image,
+              updated.email,
+            ],
       };
       result = await pool.query(query);
     }
 
     if ("rol" in updated) {
       const query = {
-        text: `update ${table} SET firstname = $1, lastname = $2, email= $3,
-            events = $4,passwrd = $5, rol = $6, image = $7 where ${fieldName} = $8`,
+        text: updated.password
+          ? `update ${table} SET firstname = $1, lastname = $2, email= $3,
+            events = $4,passwrd = $5, rol = $6, image = $7 where ${fieldName} = $8`
+          : `update ${table} SET firstname = $1, lastname = $2, email= $3,
+            events = $4, rol = $5, image = $6 where ${fieldName} = $7`,
 
-        values: [
-          updated.firstName,
-          updated.lastName,
-          updated.email,
-          updated.events,
-          updated.password,
-          updated.rol,
-          updated.image,
-          updated.email,
-        ],
+        values: updated.password
+          ? [
+              updated.firstName,
+              updated.lastName,
+              updated.email,
+              updated.events,
+              updated.password,
+              updated.rol,
+              updated.image,
+              updated.email,
+            ]
+          : [
+              updated.firstName,
+              updated.lastName,
+              updated.email,
+              updated.events,
+              updated.rol,
+              updated.image,
+              updated.email,
+            ],
       };
       result = await pool.query(query);
     }
@@ -242,7 +267,7 @@ export class Database {
       values: [value, id],
     };
 
-    return !!(await pool.query(query))
+    return !!(await pool.query(query));
   };
 
   static read: any = async (
@@ -259,6 +284,27 @@ export class Database {
     return result.rows;
   };
 
+  static readAdmin: any = async (id: number | string) => {
+    const query = {
+      text: `select firstname, lastname, email, rol, events, image from admins where email = $1`,
+      values: [id],
+    };
+
+    const result = await pool.query(query);
+
+    return result.rows;
+  };
+
+  static readSpeaker: any = async (id: number | string) => {
+    const query = {
+      text: `select firstname, lastname, email, events, image from speakers where email = $1`,
+      values: [id],
+    };
+
+    const result = await pool.query(query);
+
+    return result.rows;
+  };
   static delete: any = async (
     id: number | string,
     table: string,

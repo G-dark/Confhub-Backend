@@ -1,16 +1,38 @@
 import { Router } from "express";
+import  express  from "express";
 
-import { deleteProfile, loginProfile, makeAdmin, updateProfile } from "../Controllers/admin-controller.js";
+import {
+  deleteProfile,
+  getAdmin,
+  loginProfile,
+  makeAdmin,
+  updateProfile,
+} from "../Controllers/admin-controller.js";
 import { Auth } from "../Middlewares/auth.js";
-import { deleteSpeakerProfile, updateSpeakerProfile } from "../Controllers/speaker-controller.js";
+import {
+  deleteSpeakerProfile,
+  updateSpeakerProfile,
+} from "../Controllers/speaker-controller.js";
+import { uploadImage } from "../Middlewares/storage.js";
 
 const admins = Router();
 
-admins.post("/api/admins/login", loginProfile);
-admins.post("/api/admins", makeAdmin);
-admins.patch("/api/admins/:email2Update", Auth(), updateProfile);
+admins.get("/api/admins/:email", Auth(), getAdmin);
+admins.post("/api/admins/login", express.json(), loginProfile);
+admins.post("/api/admins", uploadImage.single("image"), makeAdmin);
+admins.patch(
+  "/api/admins/:email2Update",
+  Auth(),
+  uploadImage.single("image"),
+  updateProfile
+);
 admins.delete("/api/admins/:email", Auth(), deleteProfile);
-admins.patch("/api/admins/speaker/:email2Update", Auth(), updateSpeakerProfile);
+admins.patch(
+  "/api/admins/speaker/:email2Update",
+  Auth(),
+  uploadImage.single("image"),
+  updateSpeakerProfile
+);
 admins.delete("/api/admins/speaker/:email", Auth(), deleteSpeakerProfile);
 
 export default admins;

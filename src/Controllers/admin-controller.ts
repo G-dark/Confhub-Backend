@@ -6,13 +6,14 @@ import { UpdateProfileUsecase } from "../Domain/Usecases/AdminUsecases/UpdatePro
 import { GetAdminUsecase } from "../Domain/Usecases/AdminUsecases/GetAdminUsecase.js";
 import { LoginAdminUsecase } from "../Domain/Usecases/AdminUsecases/LoginAdminUsecase.js";
 import jwt from "jsonwebtoken";
-import { JWT_SECRET_KEY } from "../App/config.js";
+import { JWT_SECRET_KEY, URL_BASE } from "../App/config.js";
 import { AuthRequest } from "../Middlewares/auth.js";
 import { ThisAdminExistsUsecase } from "../Domain/Usecases/AdminUsecases/ThisAdminExistsUsecase.js";
 import { ThisSpeakerExistsUsecase } from "../Domain/Usecases/SpeakerUsecases/ThisSpeakerExistsUsecase.js";
+import { readSync } from "fs";
 
 export const makeAdmin: any = async (req: Request, res: Response) => {
-  const { firstName, lastName, email, password, image } = req.body;
+  const { firstName, lastName, email, password } = req.body;
 
   try {
     const admin: Admin = {
@@ -22,7 +23,7 @@ export const makeAdmin: any = async (req: Request, res: Response) => {
       password,
       events: [],
       rol: true,
-      image: image ? image : "",
+      image: req.file ? URL_BASE + "/Public/" + req.file.filename : "",
     };
 
     let result;
@@ -34,12 +35,12 @@ export const makeAdmin: any = async (req: Request, res: Response) => {
       ) {
         result = await MakeProfileUsecase.call(admin);
       } else {
-        res
+        return res
           .status(444)
           .json({ error: "el email ya está registrado como speaker o admin" });
       }
     } else {
-      res.status(444).json({ error: "email y contraseña requeridos" });
+      return res.status(444).json({ error: "email y contraseña requeridos" });
     }
 
     return result
@@ -47,7 +48,7 @@ export const makeAdmin: any = async (req: Request, res: Response) => {
       : res.status(444).json({ error: "Admin no registrado" });
   } catch (error) {
     console.error("Se obtuvo un error", error);
-    res.status(500).json({ error: "Error interno" });
+    return res.status(500).json({ error: "Error interno" });
   }
 };
 
@@ -72,45 +73,56 @@ export const loginProfile: any = async (req: Request, res: Response) => {
         ? res.json({ success: "Usuario logueado", token: token })
         : res.status(444).json({ error: "Usuario no logueado" });
     } else {
-      res.status(404).json({ error: "Usuario inexistente" });
+      return res.status(404).json({ error: "Usuario inexistente" });
     }
   } catch (error) {
     console.error("Se obtuvo un error", error);
-    res.status(500).json({ error: "Error interno" });
+    return res.status(500).json({ error: "Error interno" });
   }
 };
 
 export const updateProfile: any = async (req: AuthRequest, res: Response) => {
   const { email2Update } = req.params;
-  const { firstName, lastName, email, password, events } = req.body;
+  const {  email } = req.body;
   let result = false;
+  console.log(req.file);
   try {
     if (await ThisAdminExistsUsecase.call(email2Update)) {
-      const admin2Updated = transformToAdmin(
-        ((await GetAdminUsecase.call(email2Update)) as any)[0]
-      );
+      if (req.user && email2Update == req.user.email) {
+        const admin2Updated = transformToAdmin(
+          ((await GetAdminUsecase.call(email2Update)) as any)[0]
+        );
 
-      const admin: Admin = {
-        ...admin2Updated,
-        ...req.body,
-      };
-      if ((email && email2Update == email) || !email) {
-        result = await UpdateProfileUsecase.call(admin, email2Update);
+        const admin: Admin = {
+          ...admin2Updated,
+          ...req.body,
+          image: req.file
+            ? URL_BASE + "/Public/" + req.file.filename
+            : admin2Updated.image,
+        };
+
+        if ((email && email2Update == email) || !email) {
+          result = await UpdateProfileUsecase.call(admin, email2Update);
+        } else {
+          return res
+            .status(444)
+            .json({ error: "no se puede modificar el email de una cuenta" });
+        }
+
+        return result
+          ? res.json({ success: "Usuario actualizado" })
+          : res.status(444).json({ error: "Usuario no actualizado" });
       } else {
-        return res
-          .status(444)
-          .json({ error: "no se puede modificar el email de una cuenta" });
+        return res.status(401).json({
+          error: "un admin no puede modificar otro admin que no sea el mismo",
+        });
       }
-
-      return result
-        ? res.json({ success: "Usuario actualizado" })
-        : res.status(444).json({ error: "Usuario no actualizado" });
     } else {
-      res.status(404).json({ error: "Usuario inexistente" });
+      return res.status(404).json({ error: "Usuario inexistente" });
     }
   } catch (error) {
     console.error("Se obtuvo un error", error);
-    res.status(500).json({ error: "Error interno" });
+    return res.status(500).json({ error: "Error interno" });
   }
 };
 
@@ -119,27 +131,65 @@ export const deleteProfile: any = async (req: AuthRequest, res: Response) => {
 
   try {
     if (await ThisAdminExistsUsecase.call(email)) {
-      const result = await DeleteProfileUsecase.call(email);
+      if (req.user && req.user.email == email) {
+        const result = await DeleteProfileUsecase.call(email);
 
-      return result
-        ? res.json({ success: "Usuario eliminado" })
-        : res.status(444).json({ error: "Usuario no eliminado" });
+        return result
+          ? res.json({ success: "Usuario eliminado" })
+          : res.status(444).json({ error: "Usuario no eliminado" });
+      } else {
+        return res.status(401).json({
+          error: "Un admin no puede eliminar a otro admin que no sea el mismo",
+        });
+      }
     } else {
-      res.status(404).json({ error: "Usuario inexistente" });
+      return res.status(404).json({ error: "Usuario inexistente" });
     }
   } catch (error) {
     console.error("Se obtuvo un error", error);
-    res.status(500).json({ error: "Error interno" });
+    return res.status(500).json({ error: "Error interno" });
+  }
+};
+
+export const getAdmin: any = async (req: AuthRequest, res: Response) => {
+  const { email } = req.params;
+
+  try {
+    if (await ThisAdminExistsUsecase.call(email)) {
+      if (
+        (req.user && req.user.email && req.user.email == email) ||
+        req.user?.rol == "admin"
+      ) {
+        const admin = transformToAdmin(
+          ((await GetAdminUsecase.call(email)) as any)[0]
+        );
+        return admin
+          ? res.json({ admin })
+          : res.status(444).json({ error: "Error obteniendo el usuario" });
+      } else {
+        return res.status(401).json({
+          error: "Un admin no puede saber la información de otros admins",
+        });
+      }
+    } else {
+      return res.status(404).json({ error: "Usuario inexistente" });
+    }
+  } catch (error) {
+    console.error("Se obtuvo un error", error);
+    return res.status(500).json({ error: "Error interno" });
   }
 };
 
 export const transformToAdmin = (admin: any): Admin => {
   return {
     email: admin.email,
-    password: admin.passwrd,
+    password:admin.passwrd,
     firstName: admin.firstname,
     lastName: admin.lastname,
     rol: admin.rol,
     image: admin.image,
+    events:admin.events,
   };
 };
+
+

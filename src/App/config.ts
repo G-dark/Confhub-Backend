@@ -11,9 +11,10 @@ const DB_PORT = process.env.DB_PORT;
 const USER = process.env.USER;
 const PASSWORD = process.env.PASSWORD;
 export const JWT_SECRET_KEY= process.env.JWT_SECRET_KEY;
-export const PEPPER= process.env.PEPPER;
+export const PEPPER= process.env.PEPPER || "loquesea";
 export const SALT_OR_ROUNDS= Number(process.env.SALT_OR_ROUNDS) || 10;
-
+const base = (HOST == "localhost") ? ("http://") : ("https://");
+export const URL_BASE = base + HOST + ":" + PORT + "/"
  const poolConfig:any = {
   host: HOST,
   user: USER,
