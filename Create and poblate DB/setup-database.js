@@ -319,6 +319,15 @@ INSERT INTO feedbacks (eventid, id_, title, comment_, score, dateTime, likes, di
 INSERT INTO feedbacks (eventid, id_, title, comment_, score, dateTime, likes, dislikes) VALUES (89314270, 3746501928374650, 'Muy útil, aplicable en mi proyecto actual.', 'El contenido del comentario es positivo y aporta valor. Sería aún más útil si se incluyeran situaciones reales o contextos donde se aplicó lo aprendido.', 4, '2025-03-28T12:30:00Z', 1, 0);
     `);
 
+    // initial admin 
+
+    await dbClient.query(`
+     INSERT INTO admins(
+	firstname, lastname, email, passwrd, rol, events, image)
+	VALUES ('Edison', 'Pacheco', 'edisonp@uninorte.edu.co', '$2b$11$rXJPa4bPkgmdtYjBl7jfqODgrpPfczAS4L9suUFiOGWu1pp19i9pC', true, [], '');
+
+    `);
+
     console.log("Datos insertados");
 
     await dbClient.end();

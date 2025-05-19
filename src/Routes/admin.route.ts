@@ -27,12 +27,6 @@ admins.patch(
   updateProfile
 );
 admins.delete("/api/admins/:email", Auth(), deleteProfile);
-admins.patch(
-  "/api/admins/speaker/:email2Update",
-  Auth(),
-  uploadImage.single("image"),
-  updateSpeakerProfile
-);
 admins.delete("/api/admins/speaker/:email", Auth(), deleteSpeakerProfile);
 
 export default admins;
