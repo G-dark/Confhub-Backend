@@ -3,12 +3,10 @@ import jwt from "jsonwebtoken";
 import { JWT_SECRET_KEY } from "../App/config.js";
 
 export interface AuthRequest extends Request {
-  user?: { email: string; rol: string; };
+  user?: { email: string; rol: string };
 }
 export const Auth: any = () => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
-
-
     let token_acc;
 
     const authHeader = req.headers["authorization"];
@@ -16,6 +14,7 @@ export const Auth: any = () => {
     if (authHeader) {
       token_acc = authHeader.split(" ")[1];
     }
+   
 
     if (!token_acc) {
       return res.status(404).json({ error: "token no suministrado" });

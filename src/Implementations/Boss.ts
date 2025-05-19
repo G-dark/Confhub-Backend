@@ -10,7 +10,7 @@ export class Boss implements IAdmin {
     return await Database.idExists(email, "admins", "email");
   }
   async getAccount(email: string): Promise<Admin> {
-    return await Database.read(email, "admins", "email");
+    return await Database.readAdmin(email);
   }
   async loginProfile(email: string, password: string): Promise<boolean> {
     const admin = (await Database.read(email, "admins", "email"))[0];
@@ -38,6 +38,6 @@ export class Boss implements IAdmin {
     return await Database.register("admins", admin);
   }
   async deleteProfile(email: string): Promise<boolean> {
-    return await Database.delete(email, "speakers", "email");
+    return await Database.delete(email, "admins", "email");
   }
 }

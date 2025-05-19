@@ -16,17 +16,6 @@ const logFilePath = path.join(__dirname, "../../ApiVersion.txt");
 
 const app: any = express();
 
-// middlewares
-app.use(express.json());
-
-app.use(updateApiVersion);
-app.use(cors());
-
-// routes
-app.use(events);
-app.use(feedbacks);
-app.use(admins);
-app.use(speakers);
 
 app.use(
   cors({
@@ -35,6 +24,25 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+app.use("/Public", express.static("../src/Public"));
+
+app.use(admins);
+app.use(speakers);
+
+// middlewares
+app.use(express.json({limit:"10mb"}));
+app.use(updateApiVersion);
+
+
+
+// routes
+
+app.use(events);
+app.use(feedbacks);
+
+
+
 
 app.get("/apiVersion", async (req: Request, res: Response) => {
   const apiVersion = await readFile(logFilePath, "utf-8");
