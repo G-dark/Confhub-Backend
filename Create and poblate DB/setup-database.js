@@ -16,7 +16,7 @@ async function setupDatabase() {
   // Configuración del cliente inicial para conectarse a la base 'postgres'
   const client = new Client({
     user: USER,
-    host: HOST,
+    host: DB_HOST,
     password: PASSWORD,
     port: DB_PORT,
     database: "postgres", // Nos conectamos a la base de sistema
