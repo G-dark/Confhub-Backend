@@ -17,11 +17,14 @@ After that you must make a .env file following the .env.example
 like this: 
 ```dotenv
 PORT=3000 
-HOST=localhost 
+HOST=localhost
+DB_HOST=localhost 
 DB_NAME=confhub_db 
 DB_PORT=5432 
 USER=postgres 
-PASSWORD=YOUR_PASSWORD 
+PASSWORD=YOUR_PASSWORD
+PEPPER=YOUR_PEPPER
+SALT_OR_ROUNDS=10
 ```
 ## Setup and poblate the database 
 
