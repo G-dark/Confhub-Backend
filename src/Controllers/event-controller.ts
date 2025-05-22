@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { myEvent } from "../Domain/Entities/Event.js";
 import { generateRandomId } from "../Utils/tools.js";
 import { SuscribeToAnEventUsecase } from "../Domain/Usecases/EventUsecases/SubscribetoAnEventUsecase.js";
-import { Conference } from "../Implementations/Conference.js";
 import { ThisEventExistsUsecase } from "../Domain/Usecases/EventUsecases/ThisEventExistsUsecase.js";
 import { UpdateAnEventUsecase } from "../Domain/Usecases/EventUsecases/UpdateAnEventUsecase.js";
 import { DeleteAnEventUsecase } from "../Domain/Usecases/EventUsecases/DeleteAnEventUsecase.js";
@@ -15,12 +14,10 @@ import {
 import { readFile } from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
-import { error } from "console";
 import { AuthRequest } from "../Middlewares/auth.js";
 import { MakeAnEventUsecase } from "../Domain/Usecases/EventUsecases/MakeAnEventUsecase.js";
 import { ThisSpeakerExistsUsecase } from "../Domain/Usecases/SpeakerUsecases/ThisSpeakerExistsUsecase.js";
 import { GetSpeakerUsecase } from "../Domain/Usecases/SpeakerUsecases/GetSpeakerUsecase.js";
-import { Speaker } from "../Domain/Entities/Speaker.js";
 import { transformToSpeaker } from "./speaker-controller.js";
 import { ThisAdminExistsUsecase } from "../Domain/Usecases/AdminUsecases/ThisAdminExistsUsecase.js";
 import { transformToAdmin } from "./admin-controller.js";
@@ -64,6 +61,8 @@ export const registerEvent: any = async (req: AuthRequest, res: Response) => {
       speakerName,
       status,
       tags,
+      user_info,
+      track,
     } = req.body;
 
     let eventid: number;
@@ -88,6 +87,8 @@ export const registerEvent: any = async (req: AuthRequest, res: Response) => {
       speakerName,
       status,
       tags,
+      user_info,
+      track,
     };
 
     const email = req.user?.email;
@@ -103,20 +104,18 @@ export const registerEvent: any = async (req: AuthRequest, res: Response) => {
     }
 
     const result = await MakeAnEventUsecase.call(event);
-    if (user || user2 && result) {
-
-      if(email && user2 && req.user?.rol == "admin"){
-         user2.events?.push(eventid);
-        await UpdateProfileUsecase.call(user2,email)
-      } else if (email && user && req.user?.rol == "user"){
+    if (user || (user2 && result)) {
+      if (email && user2 && req.user?.rol == "admin") {
+        user2.events?.push(eventid);
+        await UpdateProfileUsecase.call(user2, email);
+      } else if (email && user && req.user?.rol == "user") {
         user.events?.push(eventid);
-        await UpdateAProfileUsecase.call(user,email)
+        await UpdateAProfileUsecase.call(user, email);
       }
-
     }
-    const ApiVersion = await readFile(logFilePath, "utf-8");
+
     return result
-      ? res.json({ success: "Evento registrado", apiVersion: ApiVersion })
+      ? res.json({ success: "Evento registrado" })
       : res.status(444).json({ error: "Evento no registrado" }).status(404);
   } catch (error) {
     console.error("se obtuvo un error", error);
@@ -139,7 +138,10 @@ export const updateEvent: any = async (req: AuthRequest, res: Response) => {
     user = transformToAdmin(((await GetAdminUsecase.call(email)) as any)[0]);
   }
 
-  if ((user && user.events) && user.events.includes(Number(id)) || req.user?.rol == "admin") {
+  if (
+    (user && user.events && user.events.includes(Number(id))) ||
+    req.user?.rol == "admin"
+  ) {
     try {
       const existingEvent = await ThisEventExistsUsecase.call(Number(id));
       if (!existingEvent) {
@@ -147,7 +149,7 @@ export const updateEvent: any = async (req: AuthRequest, res: Response) => {
       }
 
       // Obtener los datos actuales del evento
-      const currentEvent = await GetEventsUsecase.call(Number(id));
+      const currentEvent = transformToMyEvent((await GetEventsUsecase.call(Number(id)))[0]);
       if (!currentEvent) {
         return res
           .status(404)
@@ -165,19 +167,18 @@ export const updateEvent: any = async (req: AuthRequest, res: Response) => {
 
       const result = await UpdateAnEventUsecase.call(updatedEvent, Number(id));
 
-      const ApiVersion = await readFile(logFilePath, "utf-8");
-
       return result
-        ? res.json({ success: "Evento actualizado", apiversion: ApiVersion })
+        ? res.json({ success: "Evento actualizado" })
         : res.status(444).json({ error: "Evento no actualizado" });
     } catch (error) {
       console.error("se obtuvo un error", error);
       res.status(500).json({ error: "Error interno" });
     }
   } else {
-    res
-      .status(444)
-      .json({ error: "No puedes editar eventos que no son tuyos al menos que seas admin" });
+    res.status(444).json({
+      error:
+        "No puedes editar eventos que no son tuyos al menos que seas admin",
+    });
   }
 };
 
@@ -185,39 +186,62 @@ export const deleteEvent: any = async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const email = req.user?.email;
   let user;
-  if (email && (await ThisSpeakerExistsUsecase.call(email))) {
-    user = transformToSpeaker(
-      ((await GetSpeakerUsecase.call(email)) as any)[0]
-    );
-  }
+  try {
+    if (email && (await ThisSpeakerExistsUsecase.call(email))) {
+      user = transformToSpeaker(
+        ((await GetSpeakerUsecase.call(email)) as any)[0]
+      );
+    }
 
-  if (email && (await ThisAdminExistsUsecase.call(email))) {
-    user = transformToAdmin(((await GetAdminUsecase.call(email)) as any)[0]);
-  }
+    if (email && (await ThisAdminExistsUsecase.call(email))) {
+      user = transformToAdmin(((await GetAdminUsecase.call(email)) as any)[0]);
+    }
 
-  if ((user && user.events) && user.events.includes(Number(id)) || req.user?.rol == "admin" ) {
-    try {
+    if (
+      (user && user.events && user.events.includes(Number(id))) ||
+      req.user?.rol == "admin"
+    ) {
       const exists = await ThisEventExistsUsecase.call(Number(id));
       if (exists) {
+        const event = await GetEventsUsecase.call(Number(id));
         const result = await DeleteAnEventUsecase.call(Number(id));
 
-        const ApiVersion = readFile(logFilePath, "utf-8");
+        const newEvents = user?.events?.filter((event) => {
+          return event != Number(id);
+        });
 
+        if (event.user_info) {
+          const admin2updated = await GetAdminUsecase.call(event.user_info);
+          const speaker2updated = await GetSpeakerUsecase.call(event.user_info);
+          let updatedUser;
+          if (newEvents && speaker2updated) {
+            updatedUser = await UpdateAProfileUsecase.call(
+              speaker2updated,
+              event.user_info
+            );
+          }
+          if (newEvents && admin2updated) {
+            updatedUser = await UpdateProfileUsecase.call(
+              admin2updated,
+              event.user_info
+            );
+          }
+        }
         return result
-          ? res.json({ success: "Evento eliminado", apiversion: ApiVersion })
+          ? res.json({ success: "Evento eliminado" })
           : res.status(444).json({ error: "No eliminado" }).status(404);
       } else {
         return res.status(404).json({ error: "Ese evento no existe" });
       }
-    } catch (error) {
-      console.error("se obtuvo un error", error);
-      res.status(500).json({ error: "Error interno" });
+    } else {
+      return res.status(444).json({
+        error:
+          "No puedes eliminar eventos que no son tuyos al menos que seas admin",
+      });
     }
-  } else {
-    res
-      .status(444)
-      .json({ error: "No puedes eliminar eventos que no son tuyos al menos que seas admin" })
-      .status(404);
+  } catch (error) {
+    console.error("se obtuvo un error", error);
+    res.status(500).json({ error: "Error interno" });
   }
 };
 
@@ -349,5 +373,7 @@ const transformToMyEvent = (event: any): myEvent => {
     avgScore: event.avgscore, // Reasignar
     numberReviews: event.numberreviews, // Reasignar
     status: event.status as "Por empezar" | "Finalizado", // Asegurar el tipo
+    user_info: event.user_info,
+    track: event.track,
   };
 };

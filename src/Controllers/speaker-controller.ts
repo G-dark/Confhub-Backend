@@ -13,9 +13,6 @@ import { ThisSpeakerExistsUsecase } from "../Domain/Usecases/SpeakerUsecases/Thi
 
 export const makeSpeaker: any = async (req: Request, res: Response) => {
   const { firstName, lastName, email, password } = req.body;
-  console.log("req.file:", req.file);
-  console.log("req.body:", req.body);
-  console.log(req.headers["content-type"]);
   try {
     const speaker: Speaker = {
       firstName: firstName ? firstName : "",

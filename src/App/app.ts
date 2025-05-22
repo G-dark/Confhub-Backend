@@ -9,6 +9,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import admins from "../Routes/admin.route.js";
 import speakers from "../Routes/speaker.route.js";
+import tracks from "../Routes/track.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,15 +35,11 @@ app.use(speakers);
 app.use(express.json({limit:"10mb"}));
 app.use(updateApiVersion);
 
-
-
 // routes
 
 app.use(events);
 app.use(feedbacks);
-
-
-
+app.use(tracks);
 
 app.get("/apiVersion", async (req: Request, res: Response) => {
   const apiVersion = await readFile(logFilePath, "utf-8");

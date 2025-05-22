@@ -6,7 +6,7 @@ config();
 async function setupDatabase() {
   // Variables de entorno
   const PORT = process.env.PORT || 5432;
-  const HOST = process.env.HOST || "localhost";
+  const DB_HOST = process.env.DB_HOST || "localhost";
   const DB_NAME = process.env.DB_NAME || "confhub_db";
   const DB_PORT = process.env.DB_PORT || 5432;
   const USER = process.env.USER || "postgres";
@@ -16,7 +16,7 @@ async function setupDatabase() {
   // Configuración del cliente inicial para conectarse a la base 'postgres'
   const client = new Client({
     user: USER,
-    host: HOST,
+    host: DB_HOST,
     password: PASSWORD,
     port: DB_PORT,
     database: "postgres", // Nos conectamos a la base de sistema
@@ -71,6 +71,7 @@ async function setupDatabase() {
     avgscore real,
     numberreviews integer,
     status text COLLATE pg_catalog."default",
+    user_info text COLLATE pg_catalog."default",
     CONSTRAINT events_pkey PRIMARY KEY (eventid));`);
 
     await dbClient.query(`
@@ -112,6 +113,16 @@ CREATE TABLE admins
     events integer[],
     image text COLLATE pg_catalog."default",
     CONSTRAINT admins_pkey PRIMARY KEY (email)
+)
+       `);
+
+    await dbClient.query(`
+CREATE TABLE tracks
+(
+    name text COLLATE pg_catalog."default" NOT NULL,
+    events integer[],
+    description text COLLATE pg_catalog."default",
+    CONSTRAINT tracks_pkey PRIMARY KEY (name)
 )
        `);
 
@@ -319,12 +330,21 @@ INSERT INTO feedbacks (eventid, id_, title, comment_, score, dateTime, likes, di
 INSERT INTO feedbacks (eventid, id_, title, comment_, score, dateTime, likes, dislikes) VALUES (89314270, 3746501928374650, 'Muy útil, aplicable en mi proyecto actual.', 'El contenido del comentario es positivo y aporta valor. Sería aún más útil si se incluyeran situaciones reales o contextos donde se aplicó lo aprendido.', 4, '2025-03-28T12:30:00Z', 1, 0);
     `);
 
-    // initial admin 
+    // initial admin
 
     await dbClient.query(`
      INSERT INTO admins(
 	firstname, lastname, email, passwrd, rol, events, image)
-	VALUES ('Edison', 'Pacheco', 'edisonp@uninorte.edu.co', '$2b$11$rXJPa4bPkgmdtYjBl7jfqODgrpPfczAS4L9suUFiOGWu1pp19i9pC', true, [], '');
+	VALUES ('Edison', 'Pacheco', 'edisonp@uninorte.edu.co', '$2b$11$rXJPa4bPkgmdtYjBl7jfqODgrpPfczAS4L9suUFiOGWu1pp19i9pC', true, ARRAY[]::integer[], '');
+
+    `);
+
+    // initial track None
+
+    await dbClient.query(`
+     INSERT INTO tracks(
+	name, description, events)
+	VALUES ('None', 'Aquí van todos los eventos sin un track', ARRAY[]::integer[]);
 
     `);
 
