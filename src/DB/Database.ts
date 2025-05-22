@@ -3,6 +3,7 @@ import { Admin } from "../Domain/Entities/Admin.js";
 import { myEvent } from "../Domain/Entities/Event.js";
 import { Feedback } from "../Domain/Entities/Feedback.js";
 import { Speaker } from "../Domain/Entities/Speaker.js";
+import { Track } from "../Domain/Entities/Track.js";
 
 export class Database {
   static register(table: string, updated: myEvent): Promise<any>;
@@ -13,9 +14,11 @@ export class Database {
 
   static register(table: string, registered: Admin): Promise<any>;
 
+  static register(table: string, registered: Track): Promise<any>;
+
   static async register(
     table: string,
-    registered: myEvent | Feedback | Speaker | Admin
+    registered: myEvent | Feedback | Speaker | Admin | Track
   ): Promise<any> {
     let result;
     if ("attendees" in registered) {
@@ -23,8 +26,8 @@ export class Database {
         text: `insert into ${table}(eventid, title, description,
               attendees,avgScore, availableSpots, category,
               dateTime,location_,numberReviews, sessionOrder,
-              speakerAvatar,speakerName,status,tags)
-              values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+              speakerAvatar,speakerName,status,tags, user_info)
+              values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
 
         values: [
           registered.eventid,
@@ -42,6 +45,7 @@ export class Database {
           registered.speakerName,
           registered.status,
           registered.tags,
+          registered.user_info
         ],
       };
       result = await pool.query(query);
@@ -101,6 +105,21 @@ export class Database {
       };
       result = await pool.query(query);
     }
+
+    if (
+      "name" in registered &&
+      "description" in registered &&
+      "events" in registered
+    ) {
+      const query = {
+        text: `insert into ${table} (name,description,events)
+            values($1, $2, $3)`,
+
+        values: [registered.name, registered.description, registered.events],
+      };
+      result = await pool.query(query);
+    }
+
     return !!result;
   }
 
@@ -132,11 +151,18 @@ export class Database {
     updated: Admin
   ): Promise<any>;
 
+  static update(
+    id: number | string,
+    table: string,
+    fieldName: string,
+    updated: Track
+  ): Promise<any>;
+
   static async update(
     id: number | String,
     table: String,
     fieldName: String,
-    updated: myEvent | Feedback | Speaker | Admin
+    updated: myEvent | Feedback | Speaker | Admin | Track
   ): Promise<any> {
     let result;
 
@@ -145,7 +171,7 @@ export class Database {
         text: `update ${table} SET eventid = $1, title = $2, description= $3,
             attendees = $4,avgScore = $5, availableSpots = $6, category=$7,
             dateTime=$8,location_=$9,numberReviews=$10, sessionOrder = $11,
-            speakerAvatar=$12,speakerName=$13,status=$14,tags=$15 where ${fieldName} = $16`,
+            speakerAvatar=$12,speakerName=$13,status=$14,tags=$15, user_info=$16 where ${fieldName} = $17`,
 
         values: [
           updated.eventid,
@@ -163,6 +189,7 @@ export class Database {
           updated.speakerName,
           updated.status,
           updated.tags,
+          updated.user_info,
           id,
         ],
       };
@@ -249,6 +276,17 @@ export class Database {
               updated.email,
             ],
       };
+      result = await pool.query(query);
+    }
+
+    if ("name" in updated && "description" in updated && "events" in updated) {
+      const query = {
+        text: `insert into ${table} (name,description,events)
+            values($1, $2, $3)`,
+
+        values: [updated.name, updated.description, updated.events],
+      };
+
       result = await pool.query(query);
     }
 

@@ -14,6 +14,8 @@
         tags: string[],
         avgScore:number,
         numberReviews:number,
+        user_info:string,
+        track:string,
         status:"Por empezar"|"Finalizado"
     }
 
