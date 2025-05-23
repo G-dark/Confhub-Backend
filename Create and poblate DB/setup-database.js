@@ -45,7 +45,7 @@ async function setupDatabase() {
     // Ahora conectarse a la nueva base
     const dbClient = new Client({
       user: USER,
-      host: HOST,
+      host: DB_HOST,
       password: PASSWORD,
       port: DB_PORT,
       database: DB_NAME,
