@@ -45,7 +45,7 @@ export class Database {
           registered.speakerName,
           registered.status,
           registered.tags,
-          registered.user_info
+          registered.user_info,
         ],
       };
       result = await pool.query(query);
@@ -233,7 +233,7 @@ export class Database {
               updated.events,
               updated.password,
               updated.image,
-              updated.email,
+              id,
             ]
           : [
               updated.firstName,
@@ -241,7 +241,7 @@ export class Database {
               updated.email,
               updated.events,
               updated.image,
-              updated.email,
+              id,
             ],
       };
       result = await pool.query(query);
@@ -264,7 +264,7 @@ export class Database {
               updated.password,
               updated.rol,
               updated.image,
-              updated.email,
+              id,
             ]
           : [
               updated.firstName,
@@ -273,7 +273,7 @@ export class Database {
               updated.events,
               updated.rol,
               updated.image,
-              updated.email,
+              id,
             ],
       };
       result = await pool.query(query);
@@ -281,10 +281,9 @@ export class Database {
 
     if ("name" in updated && "description" in updated && "events" in updated) {
       const query = {
-        text: `insert into ${table} (name,description,events)
-            values($1, $2, $3)`,
+        text: `update ${table} set name=$1, description=$2, events=$3 where ${fieldName}=$4`,
 
-        values: [updated.name, updated.description, updated.events],
+        values: [updated.name, updated.description, updated.events, id],
       };
 
       result = await pool.query(query);

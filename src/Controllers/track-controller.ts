@@ -78,8 +78,6 @@ export const updateTrack: any = async (req: AuthRequest, res: Response) => {
         ...req.body, // Sobrescribir con los valores enviados
       };
 
-      console.log(updatedTrack)
-
       const result = await UpdateATrackUsecase.call(updatedTrack, name);
 
       return result

@@ -17,7 +17,6 @@ const logFilePath = path.join(__dirname, "../../ApiVersion.txt");
 
 const app: any = express();
 
-
 app.use(
   cors({
     origin: "*",
