@@ -26,7 +26,7 @@ app.use(
 );
 
 if (HOST != "localhost") {
-  app.use("/Public", express.static("../src/Images"));
+  app.use("/Images", express.static("../src/Images"));
 } else {
   app.use("/Public", express.static("../src/Public"));
 }
