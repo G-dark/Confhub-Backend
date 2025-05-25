@@ -4,5 +4,5 @@ export type Speaker = {
   email: string,
   image?:string,
   password: string,
-  events?: number[],
+  events: number[],
 };

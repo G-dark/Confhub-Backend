@@ -26,8 +26,8 @@ export class Database {
         text: `insert into ${table}(eventid, title, description,
               attendees,avgScore, availableSpots, category,
               dateTime,location_,numberReviews, sessionOrder,
-              speakerAvatar,speakerName,status,tags, user_info)
-              values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
+              speakerAvatar,speakerName,status,tags, user_info, track)
+              values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
 
         values: [
           registered.eventid,
@@ -45,7 +45,8 @@ export class Database {
           registered.speakerName,
           registered.status,
           registered.tags,
-          registered.user_info
+          registered.user_info,
+          registered.track
         ],
       };
       result = await pool.query(query);
@@ -171,7 +172,7 @@ export class Database {
         text: `update ${table} SET eventid = $1, title = $2, description= $3,
             attendees = $4,avgScore = $5, availableSpots = $6, category=$7,
             dateTime=$8,location_=$9,numberReviews=$10, sessionOrder = $11,
-            speakerAvatar=$12,speakerName=$13,status=$14,tags=$15, user_info=$16 where ${fieldName} = $17`,
+            speakerAvatar=$12,speakerName=$13,status=$14,tags=$15, user_info=$16, track=$17 where ${fieldName} = $18`,
 
         values: [
           updated.eventid,
@@ -190,6 +191,7 @@ export class Database {
           updated.status,
           updated.tags,
           updated.user_info,
+          updated.track,
           id,
         ],
       };
@@ -233,7 +235,7 @@ export class Database {
               updated.events,
               updated.password,
               updated.image,
-              updated.email,
+              id,
             ]
           : [
               updated.firstName,
@@ -241,7 +243,7 @@ export class Database {
               updated.email,
               updated.events,
               updated.image,
-              updated.email,
+              id,
             ],
       };
       result = await pool.query(query);
@@ -264,7 +266,7 @@ export class Database {
               updated.password,
               updated.rol,
               updated.image,
-              updated.email,
+              id,
             ]
           : [
               updated.firstName,
@@ -273,7 +275,7 @@ export class Database {
               updated.events,
               updated.rol,
               updated.image,
-              updated.email,
+              id,
             ],
       };
       result = await pool.query(query);
@@ -281,10 +283,9 @@ export class Database {
 
     if ("name" in updated && "description" in updated && "events" in updated) {
       const query = {
-        text: `insert into ${table} (name,description,events)
-            values($1, $2, $3)`,
+        text: `update ${table} set name=$1, description=$2, events=$3 where ${fieldName}=$4`,
 
-        values: [updated.name, updated.description, updated.events],
+        values: [updated.name, updated.description, updated.events, id],
       };
 
       result = await pool.query(query);
@@ -309,9 +310,9 @@ export class Database {
   };
 
   static read: any = async (
-    id: number | string,
     table: string,
-    fieldName: string
+    fieldName: string,
+    id?: number | string
   ) => {
     const query = id
       ? { text: `select * from ${table} where ${fieldName} = $1`, values: [id] }
@@ -363,7 +364,7 @@ export class Database {
     table: string,
     fieldName: string
   ) => {
-    const rows = await this.read(id, table, fieldName);
+    const rows = await this.read(table, fieldName, id);
     return rows.length > 0;
   };
 }

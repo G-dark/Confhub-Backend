@@ -24,6 +24,9 @@ import { transformToAdmin } from "./admin-controller.js";
 import { GetAdminUsecase } from "../Domain/Usecases/AdminUsecases/GetAdminUsecase.js";
 import { UpdateProfileUsecase } from "../Domain/Usecases/AdminUsecases/UpdateProfileUsecase.js";
 import { UpdateAProfileUsecase } from "../Domain/Usecases/SpeakerUsecases/UpdateAProfileUsecase.js";
+import { GetTracksUsecase } from "../Domain/Usecases/TrackUsecases/GetTracksUsecase.js";
+import { Track } from "../Domain/Entities/Track.js";
+import { UpdateATrackUsecase } from "../Domain/Usecases/TrackUsecases/UpdateATrackUsecase.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -61,15 +64,16 @@ export const registerEvent: any = async (req: AuthRequest, res: Response) => {
       speakerName,
       status,
       tags,
-      user_info,
       track,
     } = req.body;
 
     let eventid: number;
 
+    // create a new id for event
     do {
       eventid = generateRandomId();
     } while (await ThisEventExistsUsecase.call(eventid));
+    const email = req.user?.email;
 
     const event: myEvent = {
       eventid,
@@ -87,12 +91,13 @@ export const registerEvent: any = async (req: AuthRequest, res: Response) => {
       speakerName,
       status,
       tags,
-      user_info,
+      user_info: email!,
       track,
     };
 
-    const email = req.user?.email;
     let user, user2;
+
+    // get the user whether a speaker or admin
     if (email && (await ThisSpeakerExistsUsecase.call(email))) {
       user = transformToSpeaker(
         ((await GetSpeakerUsecase.call(email)) as any)[0]
@@ -103,8 +108,12 @@ export const registerEvent: any = async (req: AuthRequest, res: Response) => {
       user2 = transformToAdmin(((await GetAdminUsecase.call(email)) as any)[0]);
     }
 
+    // make an event request
     const result = await MakeAnEventUsecase.call(event);
-    if (user || (user2 && result)) {
+
+    // modify the list of events created by the user
+
+    if ((user || user2) && result) {
       if (email && user2 && req.user?.rol == "admin") {
         user2.events?.push(eventid);
         await UpdateProfileUsecase.call(user2, email);
@@ -112,6 +121,17 @@ export const registerEvent: any = async (req: AuthRequest, res: Response) => {
         user.events?.push(eventid);
         await UpdateAProfileUsecase.call(user, email);
       }
+    }
+
+    // modify the list of events in tracks
+    if (track) {
+      const trackUsed = (await GetTracksUsecase.call(track))[0] as Track;
+      trackUsed.events.push(eventid);
+      await UpdateATrackUsecase.call(trackUsed, track);
+    } else {
+      const trackUsed = (await GetTracksUsecase.call("None"))[0] as Track;
+      trackUsed.events.push(eventid);
+      await UpdateATrackUsecase.call(trackUsed, "None");
     }
 
     return result
@@ -126,59 +146,101 @@ export const registerEvent: any = async (req: AuthRequest, res: Response) => {
 export const updateEvent: any = async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
 
-  const email = req.user?.email;
-  let user;
-  if (email && (await ThisSpeakerExistsUsecase.call(email))) {
-    user = transformToSpeaker(
-      ((await GetSpeakerUsecase.call(email)) as any)[0]
-    );
-  }
+  try {
+    const email = req.user?.email;
+    let user;
 
-  if (email && (await ThisAdminExistsUsecase.call(email))) {
-    user = transformToAdmin(((await GetAdminUsecase.call(email)) as any)[0]);
-  }
-
-  if (
-    (user && user.events && user.events.includes(Number(id))) ||
-    req.user?.rol == "admin"
-  ) {
-    try {
-      const existingEvent = await ThisEventExistsUsecase.call(Number(id));
-      if (!existingEvent) {
-        return res.status(404).json({ error: "Ese evento no existe" });
+    // ensure the not existence of a new eventid and new user_info
+    if (!req.body.eventid && !req.body.user_info) {
+      // bring the user whether a speaker or admin
+      if (email && (await ThisSpeakerExistsUsecase.call(email))) {
+        user = transformToSpeaker(
+          ((await GetSpeakerUsecase.call(email)) as any)[0]
+        );
       }
 
-      // Obtener los datos actuales del evento
-      const currentEvent = transformToMyEvent((await GetEventsUsecase.call(Number(id)))[0]);
-      if (!currentEvent) {
-        return res
-          .status(404)
-          .json({ error: "No se pudo obtener el evento actual" });
+      if (email && (await ThisAdminExistsUsecase.call(email))) {
+        user = transformToAdmin(
+          ((await GetAdminUsecase.call(email)) as any)[0]
+        );
       }
 
-      // Actualizar solo los campos enviados en el cuerpo de la solicitud
-      const updatedEvent = {
-        ...currentEvent, // Mantener los valores actuales
-        ...req.body, // Sobrescribir con los valores enviados
-        dateTime: req.body.dateTime
-          ? new Date(req.body.dateTime)
-          : currentEvent.dateTime,
-      };
+      // ensure user have the privileges
+      if (
+        (user && user.events && user.events.includes(Number(id))) ||
+        req.user?.rol == "admin"
+      ) {
+        // verify event exists
+        const existingEvent = await ThisEventExistsUsecase.call(Number(id));
+        if (!existingEvent) {
+          return res.status(404).json({ error: "Ese evento no existe" });
+        }
 
-      const result = await UpdateAnEventUsecase.call(updatedEvent, Number(id));
+        // Obtener los datos actuales del evento
+        const currentEvent = transformToMyEvent(
+          (await GetEventsUsecase.call(Number(id)))[0]
+        );
+        if (!currentEvent) {
+          return res
+            .status(404)
+            .json({ error: "No se pudo obtener el evento actual" });
+        }
 
-      return result
-        ? res.json({ success: "Evento actualizado" })
-        : res.status(444).json({ error: "Evento no actualizado" });
-    } catch (error) {
-      console.error("se obtuvo un error", error);
-      res.status(500).json({ error: "Error interno" });
+        // Actualizar solo los campos enviados en el cuerpo de la solicitud
+        const updatedEvent = {
+          ...currentEvent, // Mantener los valores actuales
+          ...req.body, // Sobrescribir con los valores enviados
+          dateTime: req.body.dateTime
+            ? new Date(req.body.dateTime)
+            : currentEvent.dateTime,
+        };
+
+        // modify the list of events in tracks if it change
+        if (req.body.track && req.body.track != currentEvent.track) {
+          const newtrack = (
+            await GetTracksUsecase.call(req.body.track)
+          )[0] as Track;
+          const oldtrack = (
+            await GetTracksUsecase.call(currentEvent.track)
+          )[0] as Track;
+
+          console.log(currentEvent.track, oldtrack);
+
+          if (newtrack) {
+            newtrack.events.push(currentEvent.eventid);
+            await UpdateATrackUsecase.call(newtrack, req.body.track);
+          }
+          if (oldtrack) {
+            const oldtrackEvents = oldtrack.events.filter((event) => {
+              return event != currentEvent.eventid;
+            });
+            oldtrack.events = oldtrackEvents;
+            await UpdateATrackUsecase.call(oldtrack, currentEvent.track);
+          }
+        }
+        // request the update
+        const result = await UpdateAnEventUsecase.call(
+          updatedEvent,
+          Number(id)
+        );
+
+        return result
+          ? res.json({ success: "Evento actualizado" })
+          : res.status(444).json({ error: "Evento no actualizado" });
+      } else {
+        res.status(444).json({
+          error:
+            "No puedes editar eventos que no son tuyos al menos que seas admin",
+        });
+      }
+    } else {
+      res.status(444).json({
+        error: "No puedes editar el id de un evento o el creador de uno",
+      });
     }
-  } else {
-    res.status(444).json({
-      error:
-        "No puedes editar eventos que no son tuyos al menos que seas admin",
-    });
+  } catch (error) {
+    console.error("se obtuvo un error", error);
+    res.status(500).json({ error: "Error interno" });
   }
 };
 
@@ -187,6 +249,7 @@ export const deleteEvent: any = async (req: AuthRequest, res: Response) => {
   const email = req.user?.email;
   let user;
   try {
+    // bring the user whether a speaker or admin
     if (email && (await ThisSpeakerExistsUsecase.call(email))) {
       user = transformToSpeaker(
         ((await GetSpeakerUsecase.call(email)) as any)[0]
@@ -196,37 +259,78 @@ export const deleteEvent: any = async (req: AuthRequest, res: Response) => {
     if (email && (await ThisAdminExistsUsecase.call(email))) {
       user = transformToAdmin(((await GetAdminUsecase.call(email)) as any)[0]);
     }
-
+    // ensure user have the privileges
     if (
       (user && user.events && user.events.includes(Number(id))) ||
       req.user?.rol == "admin"
     ) {
+      // verify event exists
       const exists = await ThisEventExistsUsecase.call(Number(id));
       if (exists) {
-        const event = await GetEventsUsecase.call(Number(id));
-        const result = await DeleteAnEventUsecase.call(Number(id));
+        const event = transformToMyEvent(
+          (await GetEventsUsecase.call(Number(id)))[0]
+        );
 
-        const newEvents = user?.events?.filter((event) => {
-          return event != Number(id);
-        });
+        // ensure the event point out to the creator
 
         if (event.user_info) {
-          const admin2updated = await GetAdminUsecase.call(event.user_info);
-          const speaker2updated = await GetSpeakerUsecase.call(event.user_info);
           let updatedUser;
-          if (newEvents && speaker2updated) {
-            updatedUser = await UpdateAProfileUsecase.call(
-              speaker2updated,
-              event.user_info
+
+          // get the data of the creator depending on he's a admin or speaker
+          if (await ThisAdminExistsUsecase.call(event.user_info)) {
+            const admin2updated = transformToAdmin(
+              ((await GetAdminUsecase.call(event.user_info)) as any)[0]
             );
+            if (admin2updated) {
+              // update the list of events of the user
+              const newEvents = admin2updated.events.filter((event) => {
+                return event != Number(id);
+              });
+              admin2updated.events = newEvents;
+              updatedUser = await UpdateProfileUsecase.call(
+                admin2updated,
+                event.user_info
+              );
+            }
           }
-          if (newEvents && admin2updated) {
-            updatedUser = await UpdateProfileUsecase.call(
-              admin2updated,
-              event.user_info
+          if (await ThisSpeakerExistsUsecase.call(event.user_info)) {
+            const speaker2updated = transformToSpeaker(
+              ((await GetSpeakerUsecase.call(event.user_info)) as any)[0]
             );
+
+            if (speaker2updated) {
+              // update the list of events of the user
+              const newEvents = speaker2updated.events.filter((event) => {
+                return event != Number(id);
+              });
+              speaker2updated.events = newEvents;
+              updatedUser = await UpdateAProfileUsecase.call(
+                speaker2updated,
+                event.user_info
+              );
+            }
           }
         }
+
+        // modify the list of events in tracks
+        let trackUsed;
+        if (event.track) {
+          trackUsed = (await GetTracksUsecase.call(event.track))[0] as Track;
+          const eventsInTrack = trackUsed.events.filter((event) => {
+            return event != Number(id);
+          });
+          trackUsed.events = eventsInTrack;
+          await UpdateATrackUsecase.call(trackUsed, event.track);
+        } else {
+          trackUsed = (await GetTracksUsecase.call("None"))[0] as Track;
+          const eventsInTrack = trackUsed.events.filter((event) => {
+            return event != Number(id);
+          });
+          trackUsed.events = eventsInTrack;
+          await UpdateATrackUsecase.call(trackUsed, "None");
+        }
+        const result = await DeleteAnEventUsecase.call(Number(id));
+    
         return result
           ? res.json({ success: "Evento eliminado" })
           : res.status(444).json({ error: "No eliminado" }).status(404);

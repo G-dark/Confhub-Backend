@@ -17,7 +17,6 @@ const logFilePath = path.join(__dirname, "../../ApiVersion.txt");
 
 const app: any = express();
 
-
 app.use(
   cors({
     origin: "*",
@@ -36,7 +35,6 @@ app.use(express.json({limit:"10mb"}));
 app.use(updateApiVersion);
 
 // routes
-
 app.use(events);
 app.use(feedbacks);
 app.use(tracks);

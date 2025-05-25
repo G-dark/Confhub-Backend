@@ -18,7 +18,7 @@ export class TrackEvent implements ITrack {
   async deleteATrack(name: string): Promise<boolean> {
     return await Database.delete(name, "tracks", "name");
   }
-  async getTracks(name: string): Promise<any> {
-    return await Database.read(name, "tracks", "name");
+  async getTracks(name?: string): Promise<any> {
+    return await Database.read("tracks", "name",name);
   }
 }

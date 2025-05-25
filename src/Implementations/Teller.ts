@@ -7,7 +7,7 @@ import { PEPPER, SALT_OR_ROUNDS } from "../App/config.js";
 export class Teller implements ISpeaker {
   Teller() {}
   async loginProfile(email: string, password: string): Promise<boolean> {
-    const speaker = (await Database.read(email, "speakers", "email"))[0];
+    const speaker = (await Database.read("speakers", "email",email))[0];
 
     const isMatch = await bcrypt.compare(password + PEPPER, speaker.passwrd);
 

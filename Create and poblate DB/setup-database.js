@@ -72,6 +72,7 @@ async function setupDatabase() {
     numberreviews integer,
     status text COLLATE pg_catalog."default",
     user_info text COLLATE pg_catalog."default",
+    track text COLLATE pg_catalog."default",
     CONSTRAINT events_pkey PRIMARY KEY (eventid));`);
 
     await dbClient.query(`
@@ -132,171 +133,171 @@ CREATE TABLE tracks
     await dbClient.query(`
       INSERT INTO events (
         eventid, title, category, location_, dateTime, attendees, availableSpots,
-        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar
+        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar,track
     ) VALUES (
         1245678, 'Introducción a Node.js y Express', 'Backend', 'Barranquilla, Colombia', '2025-04-09T14:00:00Z', 120, 10,
         'Carlos Ríos', 0, 0, 'Por empezar',
         ARRAY['Node.js','Express','APIs'], '[{"name": "Conceptos básicos de Node.js", "duration": 20}, {"name": "Creando un servidor con Express", "duration": 30}, {"name": "Manejo de rutas y middlewares", "duration": 25}]'::jsonb,
 		'Descubre el mundo del desarrollo backend con Node.js y Express. Aprenderás los conceptos básicos de Node.js, cómo configurar un servidor con Express y gestionar rutas y middlewares. Ideal para quienes quieren iniciar en el desarrollo de APIs modernas.',
-		'https://avatar.iran.liara.run/username?username=Carlos+Rios'
+		'https://avatar.iran.liara.run/username?username=Carlos+Rios','CONFHUB TESTING EVENT'
     );
 
 INSERT INTO events (
         eventid, title, category, location_, dateTime, attendees, availableSpots,
-        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar
+        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar, track
     ) VALUES (
         45678542, 'React Avanzado: Hooks y Context API', 'Frontend', 'Bogota, Colombia', '2025-04-12T16:00:00Z', 95, 1,
         'Andrea Gómez', 0, 0, 'Por empezar',
         ARRAY['React','Hooks','Context API'], '[ { "name": "Uso avanzado de Hooks", "duration": 25}, { "name": "Manejo de estado global con Context API", "duration": 35}, { "name": "Optimizaci\u00f3n de rendimiento en React", "duration": 30}]'::jsonb,
 		'Lleva tus habilidades en React al siguiente nivel con este taller sobre Hooks y Context API. Aprenderás cómo usar hooks avanzados, gestionar el estado de manera eficiente con Context API y optimizar el rendimiento de tus aplicaciones.',
-		'https://avatar.iran.liara.run/username?username=Andrea+Gomez'
+		'https://avatar.iran.liara.run/username?username=Andrea+Gomez','CONFHUB TESTING EVENT'
     );
 INSERT INTO events (
         eventid, title, category, location_, dateTime, attendees, availableSpots,
-        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar
+        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar,track
     ) VALUES (
         456454533, 'Flutter desde Cero: Construyendo Apps Móviles', 'Mobile', 'Medellin, Colombia', '2025-04-15T18:00:00Z', 85, 0,
         'Luis Martínez', 0, 0, 'Por empezar',
         ARRAY['Flutter','Dart','UI/UX'], '[{"name": "Fundamentos de Flutter", "duration": 20}, {"name": "Diseñando UI con Widgets UI con Widgets", "duration": 40}, {"name": "Integrando APIs en Flutter", "duration": 30}]'::jsonb,
 		'Aprende a desarrollar aplicaciones móviles desde cero con Flutter. En este taller, cubriremos los fundamentos de Flutter, el diseño de interfaces con Widgets y cómo integrar APIs para crear apps dinámicas e interactivas.',
-		'https://avatar.iran.liara.run/username?username=Luis+Martinez'
+		'https://avatar.iran.liara.run/username?username=Luis+Martinez','CONFHUB TESTING EVENT'
     );
 INSERT INTO events (
         eventid, title, category, location_, dateTime, attendees, availableSpots,
-        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description, speakerAvatar
+        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description, speakerAvatar, track
     ) VALUES (
         34567754, 'Machine Learning con Python', 'IA', 'Cucuta, Colombia', '2025-04-20T15:00:00Z', 200, 50,
         'Mariana Torres', 0, 0, 'Por empezar',
         ARRAY['Python','Machine Learning','IA'], '[{"name": "Introducción a Machine Learning", "duration": 30}, {"name": "Librer\u00edas clave: Scikit-Learn, TensorFlow", "duration": 40}, {"name": "Creando un modelo básico", "duration": 50}]', 'Sumérgete en el mundo del Machine Learning con Python. Aprenderás los fundamentos del aprendizaje automático, el uso de librerías clave como Scikit-Learn y TensorFlow, y construirás tu propio modelo de Machine Learning desde cero.',
-		'https://avatar.iran.liara.run/username?username=Mariana+Torres'
+		'https://avatar.iran.liara.run/username?username=Mariana+Torres', 'CONFHUB TESTING EVENT'
     );
 INSERT INTO events (
         eventid, title, category, location_, dateTime, attendees, availableSpots,
-        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar
+        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar,track
     ) VALUES (
         45423672, 'AWS para Desarrolladores: Desplegando Aplicaciones', 'Cloud', 'Barranquilla, Colombia', '2025-05-25T17:00:00Z', 150, 30,
         'Fernando Ruiz', 0, 0, 'Por empezar',
         ARRAY['AWS','Cloud Computing','DevOps'], '[{"name": "Conceptos básicos de AWS", "duration": 20}, {"name": "Desplegando en AWS Lambda", "duration": 35}, {"name": "Manejo de bases de datos en AWS", "duration": 30}]'::jsonb,
 		'Aprende a desplegar aplicaciones en la nube con AWS. Exploraremos conceptos clave de AWS, la implementación de aplicaciones con AWS Lambda y el manejo de bases de datos en la nube.',
-		'https://avatar.iran.liara.run/username?username=Fernando+Ruiz'
+		'https://avatar.iran.liara.run/username?username=Fernando+Ruiz','CONFHUB TESTING EVENT'
     );
 INSERT INTO events (
         eventid, title, category, location_, dateTime, attendees, availableSpots,
-        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar
+        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar,track
     ) VALUES (
         26178945, 'Scrum y Agile en Equipos de Desarrollo', 'Metodologías Ágiles', 'Miami, EUA', '2025-05-28T14:00:00Z', 90, 0,
         'Sofía Herrera', 0, 0, 'Por empezar',
         ARRAY['Scrum','Agile','Gestión de proyectos'], '[{"name": "Fundamentos de Scrum", "duration": 30}, {"name": "Roles en un equipo \u00e1gil", "duration": 25}, {"name": "Herramientas para la gesti\u00f3n \u00e1gil", "duration": 30}]', 'Descubre cómo aplicar metodologías ágiles en equipos de desarrollo con Scrum. Aprende sobre los roles en un equipo ágil, cómo gestionar proyectos de manera eficiente y qué herramientas utilizar para la gestión ágil.',
-		'https://avatar.iran.liara.run/username?username=Sofia+Herrera'
+		'https://avatar.iran.liara.run/username?username=Sofia+Herrera','CONFHUB TESTING EVENT'
     );
 INSERT INTO events (
         eventid, title, category, location_, dateTime, attendees, availableSpots,
-        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar
+        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar,track
     ) VALUES (
         111345663, 'Construcción de APIs REST con FastAPI', 'Backend', 'Bogota, Colombia', '2025-05-05T19:00:00Z', 80, 1,
         'Daniel Paredes', 0, 0, 'Por empezar',
         ARRAY['FastAPI','Python','Backend'], '[{"name": "Introducci\u00f3n a FastAPI", "duration": 20}, {"name": "Creando una API b\u00e1sica", "duration": 35}, {"name": "Autenticación y seguridad", "duration": 40}]'::jsonb,
 		'Aprende a desarrollar APIs REST modernas y eficientes con FastAPI. Exploraremos desde la creación de una API básica hasta la autenticación y seguridad en el backend.',
-		'https://avatar.iran.liara.run/username?username=Daniel+Paredes'
+		'https://avatar.iran.liara.run/username?username=Daniel+Paredes','CONFHUB TESTING EVENT'
     );
 INSERT INTO events (
         eventid, title, category, location_, dateTime, attendees, availableSpots,
-        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar
+        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar,track
     ) VALUES (
         13458921, 'Vue.js desde Cero: Creando SPAs', 'Frontend', 'Buenos Aires, Argentina', '2025-05-10T13:00:00Z', 70, 20,
         'Ricardo López', 0, 0, 'Por empezar',
         ARRAY['Vue.js','SPAs','JavaScript'], '[{"name": "Fundamentos de Vue.js", "duration": 30}, {"name": "Manejo de estado con Vuex", "duration": 35}, {"name": "Creación de Single Page Applications", "duration": 40}]'::jsonb,
 		'Aprende a desarrollar aplicaciones de una sola página (SPAs) con Vue.js. Desde los fundamentos hasta la gestión del estado con Vuex y la creación de aplicaciones interactivas.',
-		'https://avatar.iran.liara.run/username?username=Ricardo+Lopez'
+		'https://avatar.iran.liara.run/username?username=Ricardo+Lopez','CONFHUB TESTING EVENT'
     );
 INSERT INTO events (
         eventid, title, category, location_, dateTime, attendees, availableSpots,
-        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar
+        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar,track
     ) VALUES (
         13458922, 'Next.js desde Cero: Creando SPAs', 'Frontend', 'Cordoba, Argentina', '2025-05-10T12:00:00Z', 60, 15,
         'Ricardo López', 0, 0, 'Por empezar',
         ARRAY['Vue.js','SPAs','JavaScript'], '[{"name": "Fundamentos de Vue.js", "duration": 30}, {"name": "Manejo de estado con Vuex", "duration": 35}, {"name": "Creaci\u00f3n de Single Page Applications", "duration": 40}]'::jsonb,
 		'Aprende a desarrollar aplicaciones de una sola página (SPAs) con Vue.js. Desde los fundamentos hasta la gestión del estado con Vuex y la creación de aplicaciones interactivas.',
-		'https://avatar.iran.liara.run/username?username=Ricardo+Lopez'
+		'https://avatar.iran.liara.run/username?username=Ricardo+Lopez','CONFHUB TESTING EVENT'
     );
 INSERT INTO events (
         eventid, title, category, location_, dateTime, attendees, availableSpots,
-        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar
+        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar,track
     ) VALUES (
         13478923, 'React con TypeScript: Creando componentes', 'Frontend', 'Medellin, Colombia', '2025-05-20T11:00:00Z', 50, 10,
         'Andrea Gómez', 0, 0, 'Por empezar',
         ARRAY['React','TypeScript','Frontend'], '[{"name": "Fundamentos de TypeScript", "duration": 25}, {"name": "Creando componentes con React y TypeScript", "duration": 30}, {"name": "Mejorando la experiencia del usuario", "duration": 35}]'::jsonb,
 		'Aprende a crear componentes con React y TypeScript. Aprenderás sobre los fundamentos de TypeScript y cómo aplicarlos en la creación de componentes React.',
-		'https://avatar.iran.liara.run/username?username=Andrea+Gomez'
+		'https://avatar.iran.liara.run/username?username=Andrea+Gomez','CONFHUB TESTING EVENT'
     );
 INSERT INTO events (
         eventid, title, category, location_, dateTime, attendees, availableSpots,
-        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar
+        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar,track
     ) VALUES (
         83492175, 'React: Fundamentos y Hooks', 'Frontend', 'Bogotá, Colombia', '2025-04-07T10:00:00Z', 150, 5,
         'Laura Fernández', 4.2, 5, 'Finalizado',
         ARRAY['React','Hooks','Frontend'], '[{"name": "JSX y componentes", "duration": 30}, {"name": "Hooks b\u00e1sicos", "duration": 25}, {"name": "Renderizado condicional y listas", "duration": 20}]'::jsonb,
 		'Aprende cómo funciona React desde cero. Cubre los fundamentos del framework y una introducción a los hooks más utilizados como useState y useEffect.',
-		'https://avatar.iran.liara.run/username?username=Laura+Fernandez'
+		'https://avatar.iran.liara.run/username?username=Laura+Fernandez','CONFHUB TESTING EVENT'
     );
 INSERT INTO events (
         eventid, title, category, location_, dateTime, attendees, availableSpots,
-        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar
+        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar,track
     ) VALUES (
         712398645, 'Diseño UI/UX para desarrolladores', 'Diseño', 'Medellín, Colombia', '2025-04-05T09:00:00Z', 95, 15,
         'Diana López', 4.4, 5, 'Finalizado',
         ARRAY['UX','UI','Diseño'], '[{"name": "Principios de dise\u00f1o UI", "duration": 25}, {"name": "Wireframing y prototipos", "duration": 30}, {"name": "Heurísticas de usabilidad", "duration": 25}]'::jsonb,
 		'Aprende principios básicos de diseño de interfaces y experiencia de usuario enfocado a desarrolladores. Mejora tus productos digitales con buenas prácticas visuales.',
-		'https://avatar.iran.liara.run/username?username=Diana+Lopez'
+		'https://avatar.iran.liara.run/username?username=Diana+Lopez','CONFHUB TESTING EVENT'
     );
 INSERT INTO events (
         eventid, title, category, location_, dateTime, attendees, availableSpots,
-        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar
+        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar,track
     ) VALUES (
         547823109, 'Introducción a Bases de Datos Relacionales', 'Base de Datos', 'Cali, Colombia', '2025-04-03T13:00:00Z', 80, 20,
         'Andrés Salgado', 4.2, 5, 'Finalizado',
         ARRAY['SQL','PostgreSQL','Bases de datos'], '[{"name": "Modelado de datos", "duration": 30}, {"name": "Relaciones entre tablas", "duration": 20}, {"name": "Consultas SQL básicas", "duration": 25}]'::jsonb,
 		'Conoce los fundamentos de las bases de datos relacionales. Aprende a modelar tablas, relaciones y realizar consultas básicas con SQL.',
-		'https://avatar.iran.liara.run/username?username=Andres+Salgado'
+		'https://avatar.iran.liara.run/username?username=Andres+Salgado','CONFHUB TESTING EVENT'
     );
 INSERT INTO events (
         eventid, title, category, location_, dateTime, attendees, availableSpots,
-        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar
+        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar,track
     ) VALUES (
         9301284, 'Testing en JavaScript con Jest', 'Testing', 'Manizales, Colombia', '2025-04-01T16:00:00Z', 60, 10,
         'Natalia Ramírez', 4.2, 5, 'Finalizado',
         ARRAY['Testing','Jest','JavaScript'], '[{"name": "¿Por qué testear?", "duration": 15}, {"name": "Pruebas unitarias con Jest", "duration": 30}, {"name": "Pruebas de integración", "duration": 25}]'::jsonb,
 		'Aprende los fundamentos de testing en JavaScript utilizando Jest. Escribe pruebas unitarias y de integración para tus aplicaciones.',
-		'https://avatar.iran.liara.run/username?username=Natalia+Ramirez'
+		'https://avatar.iran.liara.run/username?username=Natalia+Ramirez','CONFHUB TESTING EVENT'
     );
 INSERT INTO events (
         eventid, title, category, location_, dateTime, attendees, availableSpots,
-        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar
+        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar,track
     ) VALUES (
         87123956, 'Kubernetes para principiantes', 'DevOps', 'Cartagena, Colombia', '2025-03-30T15:00:00Z', 110, 8,
         'Ricardo Soto', 4.2, 5, 'Finalizado',
         ARRAY['Kubernetes','Contenedores','DevOps'], '[{"name": "Conceptos de contenedores", "duration": 20}, {"name": "Componentes de Kubernetes", "duration": 30}, {"name": "Desplegando una app", "duration": 30}]'::jsonb,
 		'Una introducción al mundo de Kubernetes. Aprende sobre pods, servicios y cómo desplegar tu primera aplicación en un clúster.',
-		'https://avatar.iran.liara.run/username?username=Ricardo+Soto'
+		'https://avatar.iran.liara.run/username?username=Ricardo+Soto','CONFHUB TESTING EVENT'
     );
 INSERT INTO events (
         eventid, title, category, location_, dateTime, attendees, availableSpots,
-        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar
+        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar,track
     ) VALUES (
         671245897, 'Git y GitHub: Control de versiones moderno', 'Herramientas', 'Bucaramanga, Colombia', '2025-03-28T14:00:00Z', 200, 0,
         'Juliana Torres', 4.2, 5, 'Finalizado',
         ARRAY['Git','GitHub','Control de versiones'], '[{"name": "Fundamentos de Git", "duration": 30}, {"name": "Flujo de trabajo con ramas", "duration": 25}, {"name": "Resolviendo conflictos y PRs", "duration": 25}]'::jsonb,
-		'Domina el uso de Git y GitHub para el control de versiones. Aprende sobre ramas, merges, conflictos y buenas prácticas de colaboración.','https://avatar.iran.liara.run/username?username=Juliana+Torres'
+		'Domina el uso de Git y GitHub para el control de versiones. Aprende sobre ramas, merges, conflictos y buenas prácticas de colaboración.','https://avatar.iran.liara.run/username?username=Juliana+Torres','CONFHUB TESTING EVENT'
     );
 INSERT INTO events (
         eventid, title, category, location_, dateTime, attendees, availableSpots,
-        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar
+        speakerName, avgScore, numberReviews, status, tags, sessionOrder, description,speakerAvatar,track
     ) VALUES (
         89314270, 'Buenas prácticas de programación en JavaScript', 'Desarrollo', 'Cúcuta, Colombia', '2025-03-26T11:00:00Z', 130, 12,
         'Felipe Romero', 4.6, 5, 'Finalizado',
         ARRAY['JavaScript','Clean Code','Buenas prácticas'], '[{"name": "Principios SOLID", "duration": 30}, {"name": "Clean Code", "duration": 25}, {"name": "Refactorización y patrones", "duration": 30}]'::jsonb,
 		'Conoce técnicas y principios que te ayudarán a escribir código más limpio, legible y mantenible en JavaScript.',
-		'https://avatar.iran.liara.run/username?username=Felipe+Romero'
+		'https://avatar.iran.liara.run/username?username=Felipe+Romero','CONFHUB TESTING EVENT'
     );
     `);
 
@@ -345,6 +346,15 @@ INSERT INTO feedbacks (eventid, id_, title, comment_, score, dateTime, likes, di
      INSERT INTO tracks(
 	name, description, events)
 	VALUES ('None', 'Aquí van todos los eventos sin un track', ARRAY[]::integer[]);
+
+    `);
+
+     // initial track for Testing
+
+    await dbClient.query(`
+     INSERT INTO tracks(
+	name, description, events)
+	VALUES ('CONFHUB TESTING EVENT', 'Aquí van todos los eventos creados para probar a la aplicación', ARRAY[]::integer[]);
 
     `);
 
