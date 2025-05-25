@@ -12,7 +12,7 @@ const save = multer.diskStorage({
   filename: (req, file, cb) => {
     if (file !== null) {
       const ext = file.originalname.split(".").pop();
-      cb(null, req.body.email + Date.now() + "." + ext);
+      cb(null, (req.body.email ? req.body.email : req.params.email2Update) + "." + ext);
     }
   },
 });

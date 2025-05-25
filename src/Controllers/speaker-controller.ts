@@ -10,6 +10,7 @@ import { DeleteAProfileUsecase } from "../Domain/Usecases/SpeakerUsecases/Delete
 import { AuthRequest } from "../Middlewares/auth.js";
 import { ThisAdminExistsUsecase } from "../Domain/Usecases/AdminUsecases/ThisAdminExistsUsecase.js";
 import { ThisSpeakerExistsUsecase } from "../Domain/Usecases/SpeakerUsecases/ThisSpeakerExistsUsecase.js";
+import deleteFile from "../Utils/delete-file.js";
 
 export const makeSpeaker: any = async (req: Request, res: Response) => {
   const { firstName, lastName, email, password } = req.body;
@@ -20,9 +21,11 @@ export const makeSpeaker: any = async (req: Request, res: Response) => {
       email,
       password,
       events: [],
-      image: req.file ? URL_BASE + (HOST == "localhost"
-                ? "/Public/"
-                : "/Images/") + req.file.filename : "",
+      image: req.file
+        ? URL_BASE +
+          (HOST == "localhost" ? "/Public/" : "/Images/") +
+          req.file.filename
+        : "",
     };
     let result;
     if (email && password) {
@@ -94,9 +97,9 @@ export const updateSpeakerProfile: any = async (
         ...speaker2Updated,
         ...req.body,
         image: req.file
-          ? URL_BASE + (HOST == "localhost"
-                ? "/Public/"
-                : "/Images/") + req.file.filename
+          ? URL_BASE +
+            (HOST == "localhost" ? "/Public/" : "/Images/") +
+            req.file.filename
           : speaker2Updated.image,
       };
       if (
@@ -135,6 +138,22 @@ export const deleteSpeakerProfile: any = async (
     if (await ThisSpeakerExistsUsecase.call(email)) {
       let result;
       if (req.user && (req.user.email == email || req.user.rol == "admin")) {
+        // get admin for delete image
+        const speaker2delete = transformToSpeaker(
+          ((await GetSpeakerUsecase.call(email)) as any)[0]
+        );
+
+        // ensure the existence of an image to delete
+        if (speaker2delete.image) {
+          const ext = speaker2delete.image.split(".").pop();
+          // delete the image depending on the Host
+          if (HOST == "localhost") {
+            deleteFile("./src/Public/" + email + "."+ ext);
+          } else {
+            deleteFile("./src/Images/" + email + ext);
+          }
+        }
+        // make the delete request
         result = await DeleteAProfileUsecase.call(email);
       } else {
         return res.status(444).json({
