@@ -8,7 +8,8 @@ import {
   subscribeToAnEvent,
   unSubscribeFromAnEvent,
   getSubscribedEvents,
-  checkEventStatus
+  checkEventStatus,
+  getEventsFromTrack
 } from "../Controllers/event-controller.js";
 import { Auth } from "../Middlewares/auth.js";
 
@@ -16,6 +17,7 @@ const events = Router();
 
 events.get("/api/events/:id", getEvents);
 events.get("/api/events", getEvents);
+events.get("/api/events/track/:name", getEventsFromTrack);
 events.post("/api/events", Auth(), registerEvent);
 events.post("/api/events/check", checkEventStatus);
 events.patch("/api/events/:id",Auth(), updateEvent);

@@ -2,10 +2,19 @@ import { IEvent } from "../Domain/Interfaces/IEvent.js";
 import { Database } from "../DB/Database.js";
 import { dateToString } from "../Utils/tools.js";
 import { myEvent } from "../Domain/Entities/Event.js";
+import { Track } from "../Domain/Entities/Track.js";
 
 export class Conference implements IEvent {
   Conference() {}
-
+  async getEventsFromATrack(name: string): Promise<any> {
+    const track = (await Database.read("tracks", "name", name))[0] as Track;
+    console.log(track);
+    let events: any[] = []
+    for(const eventid of track.events ){
+     events.push((await Database.read("events", "eventid", eventid))[0]);
+    }
+    return events
+  }
   async updateReviewAvgScore(
     eventid: number,
     action: -1 | 0 | 1
@@ -42,7 +51,7 @@ export class Conference implements IEvent {
       );
     }
 
-    if(!result2){
+    if (!result2) {
       await Database.updateAField(
         "events",
         "numberreviews",
@@ -91,7 +100,7 @@ export class Conference implements IEvent {
       );
     }
 
-    if ( !result2) {
+    if (!result2) {
       await Database.updateAField(
         "events",
         "attendees",
@@ -104,7 +113,7 @@ export class Conference implements IEvent {
     return result1 && result2;
   }
   async unSuscribeFromAnEvent(eventid: number): Promise<boolean> {
-    const event = (await Database.read("events", "eventid",eventid))[0];
+    const event = (await Database.read("events", "eventid", eventid))[0];
 
     const result1 = await Database.updateAField(
       "events",
@@ -127,7 +136,7 @@ export class Conference implements IEvent {
       );
     }
 
-    if ( !result2 ) {
+    if (!result2) {
       // go back in case the second action doesn't complete
       await Database.updateAField(
         "events",
