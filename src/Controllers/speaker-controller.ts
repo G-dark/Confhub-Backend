@@ -150,7 +150,7 @@ export const deleteSpeakerProfile: any = async (
           if (HOST == "localhost") {
             deleteFile("./src/Public/" + email + "."+ ext);
           } else {
-            deleteFile("./src/Images/" + email + ext);
+            deleteFile("./src/Images/" + email + "." + ext);
           }
         }
         // make the delete request
