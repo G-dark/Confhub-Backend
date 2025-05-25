@@ -26,6 +26,7 @@ app.use(
 );
 
 if (HOST != "localhost") {
+  console.log(path.join(__dirname, '../Images'))
   app.use("/Images", express.static(path.join(__dirname, "../Images")));
 } else {
   app.use("/Public", express.static(path.join(__dirname, "../Public")));
