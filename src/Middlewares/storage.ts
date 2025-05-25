@@ -8,8 +8,8 @@ const __dirname = path.dirname(__filename);
 const save = multer.diskStorage({
   destination: (req, file, cb) => {
     if (HOST != "localhost") {
-      console.log(path.join(__dirname, '../Images'))
-      cb(null, path.join(__dirname, "../Images"));
+      console.log(path.join(__dirname, '../../src/Images'))
+      cb(null, path.join(__dirname, "../../src/Images"));
     } else {
       console.log(path.join(__dirname, '../Public'))
       cb(null,  path.join(__dirname, '../Public'));
