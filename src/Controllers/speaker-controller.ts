@@ -23,7 +23,7 @@ export const makeSpeaker: any = async (req: Request, res: Response) => {
       events: [],
       image: req.file
         ? URL_BASE +
-          (HOST == "localhost" ? "/Public/" : "/Images/") +
+          (HOST == "localhost" ? "Public/" : "Images/") +
           req.file.filename
         : "",
     };
@@ -98,7 +98,7 @@ export const updateSpeakerProfile: any = async (
         ...req.body,
         image: req.file
           ? URL_BASE +
-            (HOST == "localhost" ? "/Public/" : "/Images/") +
+            (HOST == "localhost" ? "Public/" : "Images/") +
             req.file.filename
           : speaker2Updated.image,
       };
