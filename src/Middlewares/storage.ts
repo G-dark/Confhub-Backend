@@ -1,9 +1,13 @@
 import multer from "multer";
-
+import { HOST } from "../App/config.js";
 
 const save = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "./src/Public");
+    if (HOST != "localhost") {
+      cb(null, "./src/Images");
+    } else {
+      cb(null, "./src/Public");
+    }
   },
   filename: (req, file, cb) => {
     if (file !== null) {

@@ -6,7 +6,7 @@ import { UpdateProfileUsecase } from "../Domain/Usecases/AdminUsecases/UpdatePro
 import { GetAdminUsecase } from "../Domain/Usecases/AdminUsecases/GetAdminUsecase.js";
 import { LoginAdminUsecase } from "../Domain/Usecases/AdminUsecases/LoginAdminUsecase.js";
 import jwt from "jsonwebtoken";
-import { JWT_SECRET_KEY, URL_BASE } from "../App/config.js";
+import { HOST, JWT_SECRET_KEY, URL_BASE } from "../App/config.js";
 import { AuthRequest } from "../Middlewares/auth.js";
 import { ThisAdminExistsUsecase } from "../Domain/Usecases/AdminUsecases/ThisAdminExistsUsecase.js";
 import { ThisSpeakerExistsUsecase } from "../Domain/Usecases/SpeakerUsecases/ThisSpeakerExistsUsecase.js";
@@ -22,7 +22,11 @@ export const makeAdmin: any = async (req: Request, res: Response) => {
       password,
       events: [],
       rol: true,
-      image: req.file ? URL_BASE + "/Public/" + req.file.filename : "",
+      image: req.file
+        ? URL_BASE + (HOST == "localhost"
+          ? "/Public/"
+          : "/Images/") + req.file.filename
+        : "",
     };
 
     let result;
@@ -82,7 +86,7 @@ export const loginProfile: any = async (req: Request, res: Response) => {
 
 export const updateProfile: any = async (req: AuthRequest, res: Response) => {
   const { email2Update } = req.params;
-  const {  email } = req.body;
+  const { email } = req.body;
   let result = false;
   console.log(req.file);
   try {
@@ -96,7 +100,9 @@ export const updateProfile: any = async (req: AuthRequest, res: Response) => {
           ...admin2Updated,
           ...req.body,
           image: req.file
-            ? URL_BASE + "/Public/" + req.file.filename
+            ? URL_BASE +
+              (HOST == "localhost" ? "/Public/" : "/Images/") +
+              req.file.filename
             : admin2Updated.image,
         };
 
@@ -182,13 +188,11 @@ export const getAdmin: any = async (req: AuthRequest, res: Response) => {
 export const transformToAdmin = (admin: any): Admin => {
   return {
     email: admin.email,
-    password:admin.passwrd,
+    password: admin.passwrd,
     firstName: admin.firstname,
     lastName: admin.lastname,
     rol: admin.rol,
     image: admin.image,
-    events:admin.events,
+    events: admin.events,
   };
 };
-
-

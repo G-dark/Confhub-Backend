@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { PORT } from "./config.js";
+import { PORT, HOST } from "./config.js";
 import events from "../Routes/event.route.js";
 import feedbacks from "../Routes/feedback.route.js";
 import cors from "cors";
@@ -25,13 +25,17 @@ app.use(
   })
 );
 
-app.use("/Public", express.static("../src/Public"));
+if (HOST != "localhost") {
+  app.use("/Public", express.static("../src/Images"));
+} else {
+  app.use("/Public", express.static("../src/Public"));
+}
 
 app.use(admins);
 app.use(speakers);
 
 // middlewares
-app.use(express.json({limit:"10mb"}));
+app.use(express.json({ limit: "10mb" }));
 app.use(updateApiVersion);
 
 // routes
