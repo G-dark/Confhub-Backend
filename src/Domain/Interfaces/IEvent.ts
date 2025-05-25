@@ -9,5 +9,6 @@ export interface IEvent{
     getEvents(eventid:number):Promise<any>;
     suscribeToAnEvent(eventid:number): Promise<boolean>;
     unSuscribeFromAnEvent(eventid:number): Promise<boolean>;
+    getEventsFromATrack(name:string):Promise<any>;
 
 }

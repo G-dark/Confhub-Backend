@@ -27,6 +27,8 @@ import { UpdateAProfileUsecase } from "../Domain/Usecases/SpeakerUsecases/Update
 import { GetTracksUsecase } from "../Domain/Usecases/TrackUsecases/GetTracksUsecase.js";
 import { Track } from "../Domain/Entities/Track.js";
 import { UpdateATrackUsecase } from "../Domain/Usecases/TrackUsecases/UpdateATrackUsecase.js";
+import { GetEventsFromATrackUsecase } from "../Domain/Usecases/EventUsecases/GetEventFromATrackUsecase.js";
+import { ThisTrackExistsUsecase } from "../Domain/Usecases/TrackUsecases/ThisTrackExistsUsecase.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,7 +45,7 @@ export const getEvents: any = async (req: Request, res: Response) => {
       : res.status(404).json({ msg: "Sin eventos con ese id" }).status(404);
   } catch (error) {
     console.error("se obtuvo un error", error);
-    res.status(500).json({ msg: "Error interno" });
+    res.status(500).json({ error: "Error interno" });
   }
 };
 
@@ -92,7 +94,7 @@ export const registerEvent: any = async (req: AuthRequest, res: Response) => {
       status,
       tags,
       user_info: email!,
-      track: track ? track: null,
+      track: track ? track : null,
     };
 
     let user, user2;
@@ -456,6 +458,30 @@ export const checkEventStatus: any = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Error al verificar el estado de los eventos", error);
+    res.status(500).json({ error: "Error interno" });
+  }
+};
+
+export const getEventsFromTrack: any = async (req: Request, res: Response) => {
+  const { name } = req.params;
+  try {
+    if (await ThisTrackExistsUsecase.call(name)) {
+      const result = await GetEventsFromATrackUsecase.call(name);
+
+      return result.length > 0
+        ? res.json(result)
+        : res
+            .status(404)
+            .json({ error: "Sin eventos con ese track" })
+            .status(404);
+    } else {
+      return res
+        .status(404)
+        .json({ error: "Ese track no existe" })
+        .status(404);
+    }
+  } catch (error) {
+    console.error("se obtuvo un error", error);
     res.status(500).json({ error: "Error interno" });
   }
 };
