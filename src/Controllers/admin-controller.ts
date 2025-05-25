@@ -10,6 +10,7 @@ import { HOST, JWT_SECRET_KEY, URL_BASE } from "../App/config.js";
 import { AuthRequest } from "../Middlewares/auth.js";
 import { ThisAdminExistsUsecase } from "../Domain/Usecases/AdminUsecases/ThisAdminExistsUsecase.js";
 import { ThisSpeakerExistsUsecase } from "../Domain/Usecases/SpeakerUsecases/ThisSpeakerExistsUsecase.js";
+import deleteFile from "../Utils/delete-file.js";
 
 export const makeAdmin: any = async (req: Request, res: Response) => {
   const { firstName, lastName, email, password } = req.body;
@@ -23,9 +24,9 @@ export const makeAdmin: any = async (req: Request, res: Response) => {
       events: [],
       rol: true,
       image: req.file
-        ? URL_BASE + (HOST == "localhost"
-          ? "/Public/"
-          : "/Images/") + req.file.filename
+        ? URL_BASE +
+          (HOST == "localhost" ? "/Public/" : "/Images/") +
+          req.file.filename
         : "",
     };
 
@@ -88,7 +89,7 @@ export const updateProfile: any = async (req: AuthRequest, res: Response) => {
   const { email2Update } = req.params;
   const { email } = req.body;
   let result = false;
-  console.log(req.file);
+  
   try {
     if (await ThisAdminExistsUsecase.call(email2Update)) {
       if (req.user && email2Update == req.user.email) {
@@ -135,8 +136,25 @@ export const deleteProfile: any = async (req: AuthRequest, res: Response) => {
   const { email } = req.params;
 
   try {
+    // verify the existence of the admin
     if (await ThisAdminExistsUsecase.call(email)) {
       if (req.user && req.user.email == email) {
+        // get admin for delete image
+        const admin2delete = transformToAdmin(
+          ((await GetAdminUsecase.call(email)) as any)[0]
+        );
+
+        // ensure the existence of an image to delete
+        if (admin2delete.image) {
+          const ext = admin2delete.image.split(".").pop();
+          // delete the image depending on the Host
+          if (HOST == "localhost") {
+            deleteFile("./src/Public/"+ email + "." + ext);
+          } else {
+            deleteFile("./src/Images/"+ email + "." + ext);
+          }
+        }
+        // make the delete request
         const result = await DeleteProfileUsecase.call(email);
 
         return result
