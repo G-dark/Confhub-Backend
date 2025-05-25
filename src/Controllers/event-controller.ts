@@ -92,7 +92,7 @@ export const registerEvent: any = async (req: AuthRequest, res: Response) => {
       status,
       tags,
       user_info: email!,
-      track,
+      track: track ? track: null,
     };
 
     let user, user2;
@@ -330,7 +330,7 @@ export const deleteEvent: any = async (req: AuthRequest, res: Response) => {
           await UpdateATrackUsecase.call(trackUsed, "None");
         }
         const result = await DeleteAnEventUsecase.call(Number(id));
-    
+
         return result
           ? res.json({ success: "Evento eliminado" })
           : res.status(444).json({ error: "No eliminado" }).status(404);
