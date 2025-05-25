@@ -25,7 +25,7 @@ export const makeAdmin: any = async (req: Request, res: Response) => {
       rol: true,
       image: req.file
         ? URL_BASE +
-          (HOST == "localhost" ? "/Public/" : "/Images/") +
+          (HOST == "localhost" ? "Public/" : "Images/") +
           req.file.filename
         : "",
     };
@@ -89,7 +89,7 @@ export const updateProfile: any = async (req: AuthRequest, res: Response) => {
   const { email2Update } = req.params;
   const { email } = req.body;
   let result = false;
-  
+
   try {
     if (await ThisAdminExistsUsecase.call(email2Update)) {
       if (req.user && email2Update == req.user.email) {
@@ -102,7 +102,7 @@ export const updateProfile: any = async (req: AuthRequest, res: Response) => {
           ...req.body,
           image: req.file
             ? URL_BASE +
-              (HOST == "localhost" ? "/Public/" : "/Images/") +
+              (HOST == "localhost" ? "Public/" : "Images/") +
               req.file.filename
             : admin2Updated.image,
         };
