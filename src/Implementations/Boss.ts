@@ -13,7 +13,7 @@ export class Boss implements IAdmin {
     return await Database.readAdmin(email);
   }
   async loginProfile(email: string, password: string): Promise<boolean> {
-    const admin = (await Database.read(email, "admins", "email"))[0];
+    const admin = (await Database.read("admins", "email",email))[0];
 
     const isMatch = await bcrypt.compare(password + PEPPER, admin.passwrd);
 

@@ -10,7 +10,6 @@ import { JWT_SECRET_KEY, URL_BASE } from "../App/config.js";
 import { AuthRequest } from "../Middlewares/auth.js";
 import { ThisAdminExistsUsecase } from "../Domain/Usecases/AdminUsecases/ThisAdminExistsUsecase.js";
 import { ThisSpeakerExistsUsecase } from "../Domain/Usecases/SpeakerUsecases/ThisSpeakerExistsUsecase.js";
-import { readSync } from "fs";
 
 export const makeAdmin: any = async (req: Request, res: Response) => {
   const { firstName, lastName, email, password } = req.body;

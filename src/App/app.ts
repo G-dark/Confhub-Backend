@@ -35,7 +35,6 @@ app.use(express.json({limit:"10mb"}));
 app.use(updateApiVersion);
 
 // routes
-
 app.use(events);
 app.use(feedbacks);
 app.use(tracks);

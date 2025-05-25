@@ -6,13 +6,13 @@ export class Opinion implements IFeedback {
   Opinion() {}
 
   async getFeedbacksFromEvent(eventid: number): Promise<any> {
-    return await Database.read(eventid, "feedbacks", "eventid");
+    return await Database.read("feedbacks", "eventid",eventid);
   }
   async thisFeedbackExists(feedbackid: number): Promise<boolean> {
     return await Database.idExists(feedbackid, "feedbacks", "id_");
   }
-  async getFeedbacks(feedbackid: number): Promise<any> {
-    return await Database.read(feedbackid, "feedbacks", "id_");
+  async getFeedbacks(feedbackid?: number): Promise<any> {
+    return await Database.read("feedbacks", "id_", feedbackid);
   }
   async updateAFeedback(
     feedback: Feedback,
@@ -21,7 +21,7 @@ export class Opinion implements IFeedback {
     return await Database.update(feedbackid, "feedbacks", "id_", feedback);
   }
   async unLikeAFeedback(feedbackid: number): Promise<boolean> {
-    const feedback = (await Database.read(feedbackid, "feedbacks", "id_"))[0];
+    const feedback = (await Database.read("feedbacks", "id_", feedbackid))[0];
 
     const result = await Database.updateAField(
       "feedbacks",
@@ -34,7 +34,7 @@ export class Opinion implements IFeedback {
     return result;
   }
   async unDislikeAFeedback(feedbackid: number): Promise<boolean> {
-    const feedback = (await Database.read(feedbackid, "feedbacks", "id_"))[0];
+    const feedback = (await Database.read("feedbacks", "id_",feedbackid))[0];
 
     const result = await Database.updateAField(
       "feedbacks",
@@ -47,7 +47,7 @@ export class Opinion implements IFeedback {
     return result;
   }
   async likeAFeedback(feedbackid: number): Promise<boolean> {
-    const feedback = (await Database.read(feedbackid, "feedbacks", "id_"))[0];
+    const feedback = (await Database.read("feedbacks", "id_", feedbackid))[0];
 
     const result = await Database.updateAField(
       "feedbacks",
@@ -60,7 +60,7 @@ export class Opinion implements IFeedback {
     return result;
   }
   async dislikeAFeedback(feedbackid: number): Promise<boolean> {
-    const feedback = (await Database.read(feedbackid, "feedbacks", "id_"))[0];
+    const feedback = (await Database.read( "feedbacks", "id_", feedbackid))[0];
 
     const result = await Database.updateAField(
       "feedbacks",

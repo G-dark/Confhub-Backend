@@ -10,7 +10,7 @@ export class Conference implements IEvent {
     eventid: number,
     action: -1 | 0 | 1
   ): Promise<boolean> {
-    const event = (await Database.read(eventid, "events", "eventid"))[0];
+    const event = (await Database.read("events", "eventid", eventid))[0];
     const result1 = await Database.updateAField(
       "events",
       "numberreviews",
@@ -18,7 +18,7 @@ export class Conference implements IEvent {
       event.numberreviews + action,
       eventid
     );
-    const feedbacks = await Database.read(eventid, "feedbacks", "eventid");
+    const feedbacks = await Database.read("feedbacks", "eventid", eventid);
 
     const scoresSum = feedbacks
       .map((feedback: any) => {
@@ -66,12 +66,12 @@ export class Conference implements IEvent {
   async deleteAnEvent(eventid: number): Promise<boolean> {
     return await Database.delete(eventid, "events", "eventid");
   }
-  async getEvents(eventid: number): Promise<any> {
-    return await Database.read(eventid, "events", "eventid");
+  async getEvents(eventid?: number): Promise<any> {
+    return await Database.read("events", "eventid", eventid);
   }
 
   async suscribeToAnEvent(eventid: number): Promise<boolean> {
-    const event = (await Database.read(eventid, "events", "eventid"))[0];
+    const event = (await Database.read("events", "eventid", eventid))[0];
     const result1 = await Database.updateAField(
       "events",
       "attendees",
@@ -104,7 +104,7 @@ export class Conference implements IEvent {
     return result1 && result2;
   }
   async unSuscribeFromAnEvent(eventid: number): Promise<boolean> {
-    const event = (await Database.read(eventid, "events", "eventid"))[0];
+    const event = (await Database.read("events", "eventid",eventid))[0];
 
     const result1 = await Database.updateAField(
       "events",

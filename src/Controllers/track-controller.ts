@@ -8,6 +8,8 @@ import { MakeATrackUsecase } from "../Domain/Usecases/TrackUsecases/MakeATrackUs
 import { ThisTrackExistsUsecase } from "../Domain/Usecases/TrackUsecases/ThisTrackExistsUsecase.js";
 import { UpdateATrackUsecase } from "../Domain/Usecases/TrackUsecases/UpdateATrackUsecase.js";
 import { DeleteATrackUsecase } from "../Domain/Usecases/TrackUsecases/DeleteATrackUsecase.js";
+import { GetEventsUsecase } from "../Domain/Usecases/EventUsecases/GetEventsUsecase.js";
+import { myEvent } from "../Domain/Entities/Event.js";
 
 export const getTracks: any = async (req: Request, res: Response) => {
   const { name } = req.params;
@@ -34,12 +36,12 @@ export const registerTrack: any = async (req: AuthRequest, res: Response) => {
 
       const track: Track = {
         name,
-        events:[],
+        events: [],
         description,
       };
 
       const result = await MakeATrackUsecase.call(track);
-
+      orderEventsOntracks();
       return result
         ? res.json({ success: "Track registrado" })
         : res.status(444).json({ error: "Track no registrado" }).status(404);
@@ -64,7 +66,7 @@ export const updateTrack: any = async (req: AuthRequest, res: Response) => {
         return res.status(404).json({ error: "Ese track no existe" });
       }
 
-      const currentTrack = (await GetTracksUsecase.call(name))[0]
+      const currentTrack = (await GetTracksUsecase.call(name))[0];
 
       if (!currentTrack) {
         return res
@@ -79,7 +81,7 @@ export const updateTrack: any = async (req: AuthRequest, res: Response) => {
       };
 
       const result = await UpdateATrackUsecase.call(updatedTrack, name);
-
+      orderEventsOntracks();
       return result
         ? res.json({ success: "Track actualizado" })
         : res.status(444).json({ error: "Track no actualizado" });
@@ -102,6 +104,7 @@ export const deleteTrack: any = async (req: AuthRequest, res: Response) => {
       const exists = await ThisTrackExistsUsecase.call(name);
       if (exists) {
         const result = await DeleteATrackUsecase.call(name);
+        orderEventsOntracks();
 
         return result
           ? res.json({ success: "track eliminado" })
@@ -120,6 +123,45 @@ export const deleteTrack: any = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const orderEventsOntracks = async () => {
+const orderEventsOntracks = async (id?: number, name?: string) => {
+  const events = await GetEventsUsecase.call(id);
+  const tracks = await GetTracksUsecase.call(name);
 
+  const trackNames = tracks.map((track: Track) => {
+    return track.name;
+  });
+  const eventsInTracks: number[][] = [];
+
+  for (const name of trackNames) {
+    const eventids:number[] = events
+      .filter((event: myEvent) => {
+        return name != "None" ? event.track == name : event.track == null;
+      }).map((event: myEvent) => {
+        return Number(event.eventid);
+      });
+
+    eventsInTracks.push(eventids);
+    console.log(eventids)
+  }
+  const noneIndex = trackNames.findIndex((name: string) => {
+    return name == "None";
+  });
+
+  const tracksNoListed = events
+    .filter((event: myEvent) => {
+      return !trackNames.includes(event.track) && event.track != null;
+    })
+    .map((event: myEvent) => {
+      return event.eventid;
+    });
+
+  if (tracksNoListed.length > 0) {
+    eventsInTracks[noneIndex] = [...eventsInTracks[noneIndex], tracksNoListed].flat();
+  }
+  console.log(eventsInTracks);
+
+  for (let i = 0; i < tracks.length; ++i) {
+    tracks[i].events = eventsInTracks[i];
+    await UpdateATrackUsecase.call(tracks[i], trackNames[i]);
+  }
 };
