@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { Speaker } from "../Domain/Entities/Speaker.js";
 import { MakeAProfileUsecase } from "../Domain/Usecases/SpeakerUsecases/MakeAProfileUsecase.js";
 import { LoginSpeakerUsecase } from "../Domain/Usecases/SpeakerUsecases/LoginSpeakerUsecase.js";
-import { JWT_SECRET_KEY, URL_BASE } from "../App/config.js";
+import { HOST, JWT_SECRET_KEY, URL_BASE } from "../App/config.js";
 import jwt from "jsonwebtoken";
 import { GetSpeakerUsecase } from "../Domain/Usecases/SpeakerUsecases/GetSpeakerUsecase.js";
 import { UpdateAProfileUsecase } from "../Domain/Usecases/SpeakerUsecases/UpdateAProfileUsecase.js";
@@ -20,7 +20,9 @@ export const makeSpeaker: any = async (req: Request, res: Response) => {
       email,
       password,
       events: [],
-      image: req.file ? URL_BASE + "/Public/" + req.file.filename : "",
+      image: req.file ? URL_BASE + (HOST == "localhost"
+                ? "/Public/"
+                : "/Images/") + req.file.filename : "",
     };
     let result;
     if (email && password) {
@@ -92,7 +94,9 @@ export const updateSpeakerProfile: any = async (
         ...speaker2Updated,
         ...req.body,
         image: req.file
-          ? URL_BASE + "/Public/" + req.file.filename
+          ? URL_BASE + (HOST == "localhost"
+                ? "/Public/"
+                : "/Images/") + req.file.filename
           : speaker2Updated.image,
       };
       if (
