@@ -76,7 +76,7 @@ export const registerEvent: any = async (req: AuthRequest, res: Response) => {
       eventid = generateRandomId();
     } while (await ThisEventExistsUsecase.call(eventid));
     const email = req.user?.email;
-
+    console.log("fecha recibida",dateTime)
     const event: myEvent = {
       eventid,
       title,
@@ -96,7 +96,7 @@ export const registerEvent: any = async (req: AuthRequest, res: Response) => {
       user_info: email!,
       track: track ? track : null,
     };
-
+    console.log("fecha parseada a Date",event.dateTime)
     let user, user2;
 
     // get the user whether a speaker or admin
