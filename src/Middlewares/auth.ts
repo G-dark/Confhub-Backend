@@ -14,7 +14,7 @@ export const Auth: any = () => {
     if (authHeader) {
       token_acc = authHeader.split(" ")[1];
     }
-   
+
 
     if (!token_acc) {
       return res.status(404).json({ error: "token no suministrado" });
@@ -32,7 +32,7 @@ export const Auth: any = () => {
       }
     } catch (error) {
       console.error("Ha ocurrido un error", error);
-      return res.json({ error: "token invalido o expirado" });
+      return res.status(401).json({ error: "token invalido o expirado" });
     }
   };
 };
