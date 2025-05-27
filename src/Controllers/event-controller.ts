@@ -42,7 +42,7 @@ export const getEvents: any = async (req: Request, res: Response) => {
 
     return result.length > 0
       ? res.json(result)
-      : res.status(404).json({ msg: "Sin eventos con ese id" }).status(404);
+      : res.status(404).json({ error: "Sin eventos con ese id" }).status(404);
   } catch (error) {
     console.error("se obtuvo un error", error);
     res.status(500).json({ error: "Error interno" });
@@ -468,12 +468,11 @@ export const getEventsFromTrack: any = async (req: Request, res: Response) => {
     if (await ThisTrackExistsUsecase.call(name)) {
       const result = await GetEventsFromATrackUsecase.call(name);
 
-      return result.length > 0
+      return result
         ? res.json(result)
         : res
             .status(404)
             .json({ error: "Sin eventos con ese track" })
-            .status(404);
     } else {
       return res
         .status(404)

@@ -15,6 +15,7 @@ export const getTracks: any = async (req: Request, res: Response) => {
   const { name } = req.params;
 
   try {
+   
     const result = await GetTracksUsecase.call(name);
 
     return result.length > 0
@@ -41,7 +42,7 @@ export const registerTrack: any = async (req: AuthRequest, res: Response) => {
       };
 
       const result = await MakeATrackUsecase.call(track);
-      orderEventsOntracks();
+      await orderEventsOntracks();
       return result
         ? res.json({ success: "Track registrado" })
         : res.status(444).json({ error: "Track no registrado" }).status(404);
@@ -81,7 +82,7 @@ export const updateTrack: any = async (req: AuthRequest, res: Response) => {
       };
 
       const result = await UpdateATrackUsecase.call(updatedTrack, name);
-      orderEventsOntracks();
+      await orderEventsOntracks();
       return result
         ? res.json({ success: "Track actualizado" })
         : res.status(444).json({ error: "Track no actualizado" });
@@ -104,7 +105,7 @@ export const deleteTrack: any = async (req: AuthRequest, res: Response) => {
       const exists = await ThisTrackExistsUsecase.call(name);
       if (exists) {
         const result = await DeleteATrackUsecase.call(name);
-        orderEventsOntracks();
+        await orderEventsOntracks();
 
         return result
           ? res.json({ success: "track eliminado" })
