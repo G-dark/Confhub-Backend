@@ -15,7 +15,6 @@ export const getTracks: any = async (req: Request, res: Response) => {
   const { name } = req.params;
 
   try {
-   
     const result = await GetTracksUsecase.call(name);
 
     return result.length > 0
@@ -31,25 +30,28 @@ export const getTracks: any = async (req: Request, res: Response) => {
 };
 
 export const registerTrack: any = async (req: AuthRequest, res: Response) => {
+  const { name, description } = req.body;
   try {
     if (req.user && req.user.rol == "admin") {
-      const { name, description } = req.body;
+      if (!(await ThisTrackExistsUsecase.call(name))) {
+        const track: Track = {
+          name,
+          events: [],
+          description,
+        };
 
-      const track: Track = {
-        name,
-        events: [],
-        description,
-      };
-
-      const result = await MakeATrackUsecase.call(track);
-      await orderEventsOntracks();
-      return result
-        ? res.json({ success: "Track registrado" })
-        : res.status(444).json({ error: "Track no registrado" }).status(404);
+        const result = await MakeATrackUsecase.call(track);
+        await orderEventsOntracks();
+        return result
+          ? res.json({ success: "Track registrado" })
+          : res.status(444).json({ error: "Track no registrado" }).status(404);
+      } else {
+        return res
+          .status(444)
+          .json({ error: "Solo un admin puede crear un track" });
+      }
     } else {
-      return res
-        .status(444)
-        .json({ error: "Solo un admin puede crear un track" });
+      return res.status(404).json({ error: "Ese track ya existe" });
     }
   } catch (error) {
     console.error("se obtuvo un error", error);
@@ -61,35 +63,39 @@ export const updateTrack: any = async (req: AuthRequest, res: Response) => {
   const { name } = req.params;
 
   try {
-    if (req.user && req.user.rol == "admin") {
-      const existingTrack = await ThisTrackExistsUsecase.call(name);
-      if (!existingTrack) {
-        return res.status(404).json({ error: "Ese track no existe" });
-      }
+    if (name != "None") {
+      if (req.user && req.user.rol == "admin") {
+        const existingTrack = await ThisTrackExistsUsecase.call(name);
+        if (!existingTrack) {
+          return res.status(404).json({ error: "Ese track no existe" });
+        }
 
-      const currentTrack = (await GetTracksUsecase.call(name))[0];
+        const currentTrack = (await GetTracksUsecase.call(name))[0];
 
-      if (!currentTrack) {
+        if (!currentTrack) {
+          return res
+            .status(404)
+            .json({ error: "No se pudo obtener el track actual" });
+        }
+
+        // Actualizar solo los campos enviados en el cuerpo de la solicitud
+        const updatedTrack = {
+          ...currentTrack, // Mantener los valores actuales
+          ...req.body, // Sobrescribir con los valores enviados
+        };
+
+        const result = await UpdateATrackUsecase.call(updatedTrack, name);
+        await orderEventsOntracks();
+        return result
+          ? res.json({ success: "Track actualizado" })
+          : res.status(444).json({ error: "Track no actualizado" });
+      } else {
         return res
-          .status(404)
-          .json({ error: "No se pudo obtener el track actual" });
+          .status(444)
+          .json({ error: "Solo un admin puede actualizar un track" });
       }
-
-      // Actualizar solo los campos enviados en el cuerpo de la solicitud
-      const updatedTrack = {
-        ...currentTrack, // Mantener los valores actuales
-        ...req.body, // Sobrescribir con los valores enviados
-      };
-
-      const result = await UpdateATrackUsecase.call(updatedTrack, name);
-      await orderEventsOntracks();
-      return result
-        ? res.json({ success: "Track actualizado" })
-        : res.status(444).json({ error: "Track no actualizado" });
     } else {
-      return res
-        .status(444)
-        .json({ error: "Solo un admin puede actualizar un track" });
+      return res.status(444).json({ error: "No puedes editar el track None" });
     }
   } catch (error) {
     console.error("se obtuvo un error", error);
@@ -101,22 +107,28 @@ export const deleteTrack: any = async (req: AuthRequest, res: Response) => {
   const { name } = req.params;
 
   try {
-    if (req.user && req.user.rol == "admin") {
-      const exists = await ThisTrackExistsUsecase.call(name);
-      if (exists) {
-        const result = await DeleteATrackUsecase.call(name);
-        await orderEventsOntracks();
+    if (name != "None") {
+      if (req.user && req.user.rol == "admin") {
+        const exists = await ThisTrackExistsUsecase.call(name);
+        if (exists) {
+          const result = await DeleteATrackUsecase.call(name);
+          await orderEventsOntracks();
 
-        return result
-          ? res.json({ success: "track eliminado" })
-          : res.status(444).json({ error: "No eliminado" }).status(404);
+          return result
+            ? res.json({ success: "track eliminado" })
+            : res.status(444).json({ error: "No eliminado" }).status(404);
+        } else {
+          return res.status(404).json({ error: "Ese track no existe" });
+        }
       } else {
-        return res.status(404).json({ error: "Ese track no existe" });
+        return res
+          .status(401)
+          .json({ error: "Solo un admin puede eliminar un track" });
       }
     } else {
       return res
         .status(444)
-        .json({ error: "Solo un admin puede eliminar un track" });
+        .json({ error: "No puedes eliminar el track None" });
     }
   } catch (error) {
     console.error("se obtuvo un error", error);
@@ -134,15 +146,16 @@ const orderEventsOntracks = async (id?: number, name?: string) => {
   const eventsInTracks: number[][] = [];
 
   for (const name of trackNames) {
-    const eventids:number[] = events
+    const eventids: number[] = events
       .filter((event: myEvent) => {
         return name != "None" ? event.track == name : event.track == null;
-      }).map((event: myEvent) => {
+      })
+      .map((event: myEvent) => {
         return Number(event.eventid);
       });
 
     eventsInTracks.push(eventids);
-    console.log(eventids)
+    console.log(eventids);
   }
   const noneIndex = trackNames.findIndex((name: string) => {
     return name == "None";
@@ -157,7 +170,10 @@ const orderEventsOntracks = async (id?: number, name?: string) => {
     });
 
   if (tracksNoListed.length > 0) {
-    eventsInTracks[noneIndex] = [...eventsInTracks[noneIndex], tracksNoListed].flat();
+    eventsInTracks[noneIndex] = [
+      ...eventsInTracks[noneIndex],
+      tracksNoListed,
+    ].flat();
   }
   console.log(eventsInTracks);
 

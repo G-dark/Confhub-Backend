@@ -42,7 +42,7 @@ export const getEvents: any = async (req: Request, res: Response) => {
 
     return result.length > 0
       ? res.json(result)
-      : res.status(404).json({ error: "Sin eventos con ese id" }).status(404);
+      : res.status(404).json({ error: "Sin eventos con ese id" });
   } catch (error) {
     console.error("se obtuvo un error", error);
     res.status(500).json({ error: "Error interno" });
@@ -76,7 +76,6 @@ export const registerEvent: any = async (req: AuthRequest, res: Response) => {
       eventid = generateRandomId();
     } while (await ThisEventExistsUsecase.call(eventid));
     const email = req.user?.email;
-    console.log("fecha recibida",dateTime)
     const event: myEvent = {
       eventid,
       title,
@@ -96,7 +95,7 @@ export const registerEvent: any = async (req: AuthRequest, res: Response) => {
       user_info: email!,
       track: track ? track : null,
     };
-    console.log("fecha parseada a Date",event.dateTime)
+
     let user, user2;
 
     // get the user whether a speaker or admin
@@ -335,7 +334,7 @@ export const deleteEvent: any = async (req: AuthRequest, res: Response) => {
 
         return result
           ? res.json({ success: "Evento eliminado" })
-          : res.status(444).json({ error: "No eliminado" }).status(404);
+          : res.status(444).json({ error: "No eliminado" });
       } else {
         return res.status(404).json({ error: "Ese evento no existe" });
       }

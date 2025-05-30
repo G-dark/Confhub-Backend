@@ -31,7 +31,7 @@ export const getFeedbacks: any = async (req: Request, res: Response) => {
     const result = await GetFeedbacksUsecase.call(Number(id));
     return result.length > 0
       ? res.json(result.map((feedback:any)=>{return transformToFeedback(feedback)}))
-      : res.status(404).json({ error: "Sin feedbacks con ese id" }).status(404);
+      : res.status(404).json({ error: "Sin feedbacks con ese id" });
   } catch (error) {
     console.error("se obtuvo un error", error);
     res.status(500).json({ error: "Error interno" });
@@ -50,7 +50,7 @@ export const getFeedbacksFromEvent: any = async (
       const result = await GetFeedbacksFromEventUsecase.call(Number(id));
       return result.length > 0
         ? res.json(result.map((feedback:any)=>{return transformToFeedback(feedback)}))
-        : res.status(444).json({ error: "Sin feedbacks con ese id" }).status(404);
+        : res.status(404).json({ error: "Sin feedbacks con ese id" });
     } else {
       return res.status(404).json({ error: "Ese evento no existe" });
     }
@@ -73,7 +73,7 @@ export const answerAFeedback: any = async (req: Request, res: Response) => {
         ? res.json({ success: "Respuesta guardada", apiVersion: ApiVersion })
         : res.status(444).json({ error: "Respuesta no guardada" });
     } else {
-      return res.status(404).json({ error: "Ese feedback no existe" }).status(404);
+      return res.status(404).json({ error: "Ese feedback no existe" });
     }
   } catch (error) {
     console.error("Se ha obtenido un error", error);
@@ -94,7 +94,7 @@ export const deleteAFeedback: any = async (req: Request, res: Response) => {
         ? res.json({ success: "Feedback eliminado", apiVersion: ApiVersion })
         : res.status(444).json({ error: "Feedback no eliminado" });
     } else {
-      return res.status(404).json({ error: "Ese feedback no existe" }).status(404);
+      return res.status(404).json({ error: "Ese feedback no existe" });
     }
   } catch (error) {
     console.error("Se ha obtenido un error", error);
@@ -122,7 +122,7 @@ export const updateAFeedback: any = async (req: Request, res: Response) => {
         ? res.json({ success: "Feedback actualizado", apiVersion: ApiVersion })
         : res.status(444).json({ error: "Feedback no actualizado" });
     } else {
-      return res.status(404).json({ error: "Ese feedback no existe" }).status(404);
+      return res.status(404).json({ error: "Ese feedback no existe" });
     }
   } catch (error) {
     console.error("Se ha obtenido un error", error);
@@ -185,7 +185,7 @@ export const likeAFeedback: any = async (req: Request, res: Response) => {
         ? res.json({ success: "Feedback likeado", apiVersion: ApiVersion })
         : res.status(444).json({ error: "Feedback no likeado" });
     } else {
-      return res.status(404).json({ error: "Ese feedback no existe" }).status(404);
+      return res.status(404).json({ error: "Ese feedback no existe" });
     }
   } catch (error) {
     console.error("Se ha obtenido un error", error);
@@ -204,7 +204,7 @@ export const unLikeAFeedback: any = async (req: Request, res: Response) => {
         ? res.json({ success: "Feedback deslikeado", apiVersion: ApiVersion })
         : res.status(444).json({ error: "Feedback no deslikeado" });
     } else {
-      return res.status(404).json({ error: "Ese feedback no existe" }).status(404);
+      return res.status(404).json({ error: "Ese feedback no existe" });
     }
   } catch (error) {
     console.error("Se ha obtenido un error", error);
@@ -223,7 +223,7 @@ export const dislikeAFeedback: any = async (req: Request, res: Response) => {
         ? res.json({ success: "Feedback dislikeado", apiVersion: ApiVersion })
         : res.status(444).json({ error: "Feedback no dislikeado" });
     } else {
-      return res.status(404).json({ error: "Ese feedback no existe" }).status(404);
+      return res.status(404).json({ error: "Ese feedback no existe" });
     }
   } catch (error) {
     console.error("Se ha obtenido un error", error);
@@ -241,7 +241,7 @@ export const unDislikeAFeedback: any = async (req: Request, res: Response) => {
         ? res.json({ success: "Feedback desdislikeado", apiVersion: ApiVersion })
         : res.status(444).json({ error: "Feedback no desdislikeado" });
     } else {
-      return res.status(404).json({ error: "Ese feedback no existe" }).status(404);
+      return res.status(404).json({ error: "Ese feedback no existe" });
     }
   } catch (error) {
     console.error("Se ha obtenido un error", error);
