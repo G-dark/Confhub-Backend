@@ -337,8 +337,8 @@ INSERT INTO feedbacks (eventid, id_, title, comment_, score, dateTime, likes, di
 
     await dbClient.query(`
      INSERT INTO admins(
-	firstname, lastname, email, passwrd, rol, events, image)
-	VALUES ('Edison', 'Pacheco', 'edisonp@uninorte.edu.co', '$2b$11$rXJPa4bPkgmdtYjBl7jfqODgrpPfczAS4L9suUFiOGWu1pp19i9pC', true, ARRAY[]::integer[], '');
+	firstname, lastname, email, passwrd, rol, events, image, id_image)
+	VALUES ('Edison', 'Pacheco', 'edisonp@uninorte.edu.co', '$2b$11$rXJPa4bPkgmdtYjBl7jfqODgrpPfczAS4L9suUFiOGWu1pp19i9pC', true, ARRAY[]::integer[], '', '');
 
     `);
 
