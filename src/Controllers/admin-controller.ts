@@ -6,30 +6,17 @@ import { UpdateProfileUsecase } from "../Domain/Usecases/AdminUsecases/UpdatePro
 import { GetAdminUsecase } from "../Domain/Usecases/AdminUsecases/GetAdminUsecase.js";
 import { LoginAdminUsecase } from "../Domain/Usecases/AdminUsecases/LoginAdminUsecase.js";
 import jwt from "jsonwebtoken";
-import { HOST, JWT_SECRET_KEY, URL_BASE } from "../App/config.js";
+import { JWT_SECRET_KEY } from "../App/config.js";
 import { AuthRequest } from "../Middlewares/auth.js";
 import { ThisAdminExistsUsecase } from "../Domain/Usecases/AdminUsecases/ThisAdminExistsUsecase.js";
 import { ThisSpeakerExistsUsecase } from "../Domain/Usecases/SpeakerUsecases/ThisSpeakerExistsUsecase.js";
-import deleteFile from "../Utils/delete-file.js";
+import { v2 as cloudinary } from "cloudinary";
+import { CLOUD_NAME, API_KEY, API_SECRET } from "../App/config.js";
 
 export const makeAdmin: any = async (req: Request, res: Response) => {
   const { firstName, lastName, email, password } = req.body;
-
+  const file = req.file;
   try {
-    const admin: Admin = {
-      firstName: firstName ? firstName : "",
-      lastName: lastName ? lastName : "",
-      email,
-      password,
-      events: [],
-      rol: true,
-      image: req.file
-        ? URL_BASE +
-          (HOST == "localhost" ? "Public/" : "Images/") +
-          req.file.filename
-        : "",
-    };
-
     let result;
 
     if (email && password) {
@@ -37,6 +24,45 @@ export const makeAdmin: any = async (req: Request, res: Response) => {
         !(await ThisAdminExistsUsecase.call(email)) &&
         !(await ThisSpeakerExistsUsecase.call(email))
       ) {
+        // Configuration
+        cloudinary.config({
+          cloud_name: CLOUD_NAME,
+          api_key: API_KEY,
+          api_secret: API_SECRET,
+        });
+
+        let base64String;
+        let uploadResult;
+        if (file) {
+          // Convertir buffer a base64
+          base64String = `data:${file.mimetype};base64,${file.buffer.toString(
+            "base64"
+          )}`;
+          // Upload an image
+          uploadResult = await cloudinary.uploader
+            .upload(base64String, {
+              folder: "users/pfps",
+              transformation: [
+                { width: 800, height: 800, crop: "limit" },
+                { quality: "auto", fetch_format: "auto" },
+              ],
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        }
+
+        const admin: Admin = {
+          firstName: firstName ? firstName : "",
+          lastName: lastName ? lastName : "",
+          email,
+          password,
+          events: [],
+          rol: true,
+          image: uploadResult ? uploadResult.secure_url : "",
+          id_image: uploadResult ? uploadResult.public_id : "",
+        };
+
         result = await MakeProfileUsecase.call(admin);
       } else {
         return res
@@ -88,6 +114,7 @@ export const loginProfile: any = async (req: Request, res: Response) => {
 export const updateProfile: any = async (req: AuthRequest, res: Response) => {
   const { email2Update } = req.params;
   const { email } = req.body;
+  const file = req.file;
   let result = false;
 
   try {
@@ -97,14 +124,57 @@ export const updateProfile: any = async (req: AuthRequest, res: Response) => {
           ((await GetAdminUsecase.call(email2Update)) as any)[0]
         );
 
+        // Configuration
+        cloudinary.config({
+          cloud_name: CLOUD_NAME,
+          api_key: API_KEY,
+          api_secret: API_SECRET,
+        });
+
+        let base64String;
+        let uploadResult;
+        if (file) {
+          // Convertir buffer a base64
+          base64String = `data:${file.mimetype};base64,${file.buffer.toString(
+            "base64"
+          )}`;
+
+          if (admin2Updated.id_image == "") {
+            // Upload an image
+            uploadResult = await cloudinary.uploader
+              .upload(base64String, {
+                folder: "users/pfps",
+                transformation: [
+                  { width: 800, height: 800, crop: "limit" },
+                  { quality: "auto", fetch_format: "auto" },
+                ],
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+
+            admin2Updated.image = uploadResult ? uploadResult.secure_url : "";
+            admin2Updated.id_image = uploadResult ? uploadResult.public_id : "";
+          } else {
+            // Update an image
+            uploadResult = await cloudinary.uploader
+              .upload(base64String, {
+                public_id: admin2Updated.id_image, // mismo que el anterior
+                overwrite: true,
+                transformation: [
+                  { width: 800, height: 800, crop: "limit" },
+                  { quality: "auto", fetch_format: "auto" },
+                ],
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+          }
+        }
+
         const admin: Admin = {
           ...admin2Updated,
           ...req.body,
-          image: req.file
-            ? URL_BASE +
-              (HOST == "localhost" ? "Public/" : "Images/") +
-              req.file.filename
-            : admin2Updated.image,
         };
 
         if ((email && email2Update == email) || !email) {
@@ -145,15 +215,13 @@ export const deleteProfile: any = async (req: AuthRequest, res: Response) => {
         );
 
         // ensure the existence of an image to delete
-        if (admin2delete.image) {
-          const ext = admin2delete.image.split(".").pop();
-          // delete the image depending on the Host
-          if (HOST == "localhost") {
-            deleteFile("./src/Public/"+ email + "." + ext);
-          } else {
-            deleteFile("./src/Images/"+ email + "." + ext);
-          }
+        if (admin2delete.image !== "") {
+          // delete the pfp image
+          const deletepfp = await cloudinary.uploader.destroy(
+            admin2delete.id_image
+          );
         }
+
         // make the delete request
         const result = await DeleteProfileUsecase.call(email);
 
@@ -212,5 +280,6 @@ export const transformToAdmin = (admin: any): Admin => {
     rol: admin.rol,
     image: admin.image,
     events: admin.events,
+    id_image: admin.id_image,
   };
 };

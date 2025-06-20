@@ -155,7 +155,6 @@ const orderEventsOntracks = async (id?: number, name?: string) => {
       });
 
     eventsInTracks.push(eventids);
-    console.log(eventids);
   }
   const noneIndex = trackNames.findIndex((name: string) => {
     return name == "None";
@@ -175,7 +174,6 @@ const orderEventsOntracks = async (id?: number, name?: string) => {
       tracksNoListed,
     ].flat();
   }
-  console.log(eventsInTracks);
 
   for (let i = 0; i < tracks.length; ++i) {
     tracks[i].events = eventsInTracks[i];

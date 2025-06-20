@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { Speaker } from "../Domain/Entities/Speaker.js";
 import { MakeAProfileUsecase } from "../Domain/Usecases/SpeakerUsecases/MakeAProfileUsecase.js";
 import { LoginSpeakerUsecase } from "../Domain/Usecases/SpeakerUsecases/LoginSpeakerUsecase.js";
-import { HOST, JWT_SECRET_KEY, URL_BASE } from "../App/config.js";
+import { JWT_SECRET_KEY } from "../App/config.js";
 import jwt from "jsonwebtoken";
 import { GetSpeakerUsecase } from "../Domain/Usecases/SpeakerUsecases/GetSpeakerUsecase.js";
 import { UpdateAProfileUsecase } from "../Domain/Usecases/SpeakerUsecases/UpdateAProfileUsecase.js";
@@ -10,29 +10,56 @@ import { DeleteAProfileUsecase } from "../Domain/Usecases/SpeakerUsecases/Delete
 import { AuthRequest } from "../Middlewares/auth.js";
 import { ThisAdminExistsUsecase } from "../Domain/Usecases/AdminUsecases/ThisAdminExistsUsecase.js";
 import { ThisSpeakerExistsUsecase } from "../Domain/Usecases/SpeakerUsecases/ThisSpeakerExistsUsecase.js";
-import deleteFile from "../Utils/delete-file.js";
+import { v2 as cloudinary } from "cloudinary";
+import { CLOUD_NAME, API_KEY, API_SECRET } from "../App/config.js";
 
 export const makeSpeaker: any = async (req: Request, res: Response) => {
   const { firstName, lastName, email, password } = req.body;
+  const file = req.file;
   try {
-    const speaker: Speaker = {
-      firstName: firstName ? firstName : "",
-      lastName: lastName ? lastName : "",
-      email,
-      password,
-      events: [],
-      image: req.file
-        ? URL_BASE +
-          (HOST == "localhost" ? "Public/" : "Images/") +
-          req.file.filename
-        : "",
-    };
     let result;
     if (email && password) {
       if (
         !(await ThisAdminExistsUsecase.call(email)) &&
         !(await ThisSpeakerExistsUsecase.call(email))
       ) {
+        // Configuration
+        cloudinary.config({
+          cloud_name: CLOUD_NAME,
+          api_key: API_KEY,
+          api_secret: API_SECRET,
+        });
+
+        let base64String;
+        let uploadResult;
+        if (file) {
+          // Convertir buffer a base64
+          base64String = `data:${file.mimetype};base64,${file.buffer.toString(
+            "base64"
+          )}`;
+          // Upload an image
+          uploadResult = await cloudinary.uploader
+            .upload(base64String, {
+              folder: "users/pfps",
+              transformation: [
+                { width: 800, height: 800, crop: "limit" },
+                { quality: "auto", fetch_format: "auto" },
+              ],
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        }
+        const speaker: Speaker = {
+          firstName: firstName ? firstName : "",
+          lastName: lastName ? lastName : "",
+          email,
+          password,
+          events: [],
+          image: uploadResult ? uploadResult.secure_url : "",
+          id_image: uploadResult ? uploadResult.public_id : "",
+        };
+
         result = await MakeAProfileUsecase.call(speaker);
       } else {
         return res
@@ -87,20 +114,64 @@ export const updateSpeakerProfile: any = async (
 ) => {
   const { email2Update } = req.params;
   const { email } = req.body;
+  const file = req.file;
   let result = false;
   try {
     if (await ThisSpeakerExistsUsecase.call(email2Update)) {
       const speaker2Updated = transformToSpeaker(
         ((await GetSpeakerUsecase.call(email2Update)) as any)[0]
       );
+      // Configuration
+      cloudinary.config({
+        cloud_name: CLOUD_NAME,
+        api_key: API_KEY,
+        api_secret: API_SECRET,
+      });
+
+      let base64String;
+      let uploadResult;
+      if (file) {
+        // Convertir buffer a base64
+        base64String = `data:${file.mimetype};base64,${file.buffer.toString(
+          "base64"
+        )}`;
+
+        if (speaker2Updated.id_image == "") {
+          // Upload an image
+          uploadResult = await cloudinary.uploader
+            .upload(base64String, {
+              folder: "users/pfps",
+              transformation: [
+                { width: 800, height: 800, crop: "limit" },
+                { quality: "auto", fetch_format: "auto" },
+              ],
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+
+          speaker2Updated.image = uploadResult ? uploadResult.secure_url : "";
+          speaker2Updated.id_image = uploadResult ? uploadResult.public_id : "";
+        } else {
+          // Update an image
+          uploadResult = await cloudinary.uploader
+            .upload(base64String, {
+              public_id: speaker2Updated.id_image, // mismo que el anterior
+              overwrite: true,
+              transformation: [
+                { width: 800, height: 800, crop: "limit" },
+                { quality: "auto", fetch_format: "auto" },
+              ],
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        }
+      }
+
       const speaker: Speaker = {
         ...speaker2Updated,
         ...req.body,
-        image: req.file
-          ? URL_BASE +
-            (HOST == "localhost" ? "Public/" : "Images/") +
-            req.file.filename
-          : speaker2Updated.image,
       };
       if (
         (((email && email2Update == email) || !email) &&
@@ -144,14 +215,11 @@ export const deleteSpeakerProfile: any = async (
         );
 
         // ensure the existence of an image to delete
-        if (speaker2delete.image) {
-          const ext = speaker2delete.image.split(".").pop();
-          // delete the image depending on the Host
-          if (HOST == "localhost") {
-            deleteFile("./src/Public/" + email + "."+ ext);
-          } else {
-            deleteFile("./src/Images/" + email + "." + ext);
-          }
+        if (speaker2delete.image !== "") {
+          // delete the pfp image
+          const deletepfp = await cloudinary.uploader.destroy(
+            speaker2delete.id_image
+          );
         }
         // make the delete request
         result = await DeleteAProfileUsecase.call(email);
@@ -210,5 +278,6 @@ export const transformToSpeaker = (speaker: any): Speaker => {
     lastName: speaker.lastname,
     events: speaker.events,
     image: speaker.image,
+    id_image: speaker.id_image,
   };
 };

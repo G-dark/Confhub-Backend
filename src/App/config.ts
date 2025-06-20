@@ -23,6 +23,9 @@ export const URL_BASE = base + HOST +  (HOST == "localhost" ? ":" + PORT : "") +
   password: PASSWORD,
   port: DB_PORT,
 };
+export const CLOUD_NAME = process.env.CLOUD_NAME;
+export const API_SECRET = process.env.API_SECRET;
+export const API_KEY = process.env.API_KEY;
 
 console.log("Database connection ✅ " );
 export const pool = new Pool(poolConfig);

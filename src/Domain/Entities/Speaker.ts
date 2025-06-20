@@ -5,4 +5,5 @@ export type Speaker = {
   image?:string,
   password: string,
   events: number[],
+  id_image:string,
 };
