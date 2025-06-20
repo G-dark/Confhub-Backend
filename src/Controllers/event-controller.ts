@@ -137,7 +137,7 @@ export const registerEvent: any = async (req: AuthRequest, res: Response) => {
 
     return result
       ? res.json({ success: "Evento registrado" })
-      : res.status(444).json({ error: "Evento no registrado" }).status(404);
+      : res.status(444).json({ error: "Evento no registrado" });
   } catch (error) {
     console.error("se obtuvo un error", error);
     res.status(500).json({ msg: "Error interno" });

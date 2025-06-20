@@ -74,8 +74,8 @@ export class Database {
 
     if (!("rol" in registered) && "firstName" in registered) {
       const query = {
-        text: `insert into ${table} (firstname,lastname,email,events,passwrd,image)
-          values($1, $2, $3, $4, $5, $6)`,
+        text: `insert into ${table} (firstname,lastname,email,events,passwrd,image, id_image)
+          values($1, $2, $3, $4, $5, $6, $7)`,
 
         values: [
           registered.firstName,
@@ -84,6 +84,7 @@ export class Database {
           registered.events,
           registered.password,
           registered.image,
+          registered.id_image
         ],
       };
       result = await pool.query(query);
@@ -91,8 +92,8 @@ export class Database {
 
     if ("rol" in registered) {
       const query = {
-        text: `insert into ${table} (firstname,lastname,email,events,passwrd,rol,image)
-            values($1, $2, $3, $4, $5, $6, $7)`,
+        text: `insert into ${table} (firstname,lastname,email,events,passwrd,rol,image,id_image)
+            values($1, $2, $3, $4, $5, $6, $7, $8)`,
 
         values: [
           registered.firstName,
@@ -102,6 +103,7 @@ export class Database {
           registered.password,
           registered.rol,
           registered.image,
+          registered.id_image
         ],
       };
       result = await pool.query(query);
@@ -223,9 +225,9 @@ export class Database {
       const query = {
         text: updated.password
           ? `update ${table} SET firstname = $1, lastname = $2, email= $3,
-            events = $4,passwrd = $5, image = $6 where ${fieldName} = $7`
+            events = $4,passwrd = $5, image = $6, id_image = $7 where ${fieldName} = $8`
           : `update ${table} SET firstname = $1, lastname = $2, email= $3,
-            events = $4, image = $5 where ${fieldName} = $6`,
+            events = $4, image = $5, id_image = $6 where ${fieldName} = $7`,
 
         values: updated.password
           ? [
@@ -235,6 +237,7 @@ export class Database {
               updated.events,
               updated.password,
               updated.image,
+              updated.id_image,
               id,
             ]
           : [
@@ -243,6 +246,7 @@ export class Database {
               updated.email,
               updated.events,
               updated.image,
+              updated.id_image,
               id,
             ],
       };
@@ -253,9 +257,9 @@ export class Database {
       const query = {
         text: updated.password
           ? `update ${table} SET firstname = $1, lastname = $2, email= $3,
-            events = $4,passwrd = $5, rol = $6, image = $7 where ${fieldName} = $8`
+            events = $4,passwrd = $5, rol = $6, image = $7, id_image = $8 where ${fieldName} = $9`
           : `update ${table} SET firstname = $1, lastname = $2, email= $3,
-            events = $4, rol = $5, image = $6 where ${fieldName} = $7`,
+            events = $4, rol = $5, image = $6, id_image = $7 where ${fieldName} = $8`,
 
         values: updated.password
           ? [
@@ -266,6 +270,7 @@ export class Database {
               updated.password,
               updated.rol,
               updated.image,
+              updated.id_image,
               id,
             ]
           : [
@@ -275,6 +280,7 @@ export class Database {
               updated.events,
               updated.rol,
               updated.image,
+              updated.id_image,
               id,
             ],
       };
@@ -325,7 +331,7 @@ export class Database {
 
   static readAdmin: any = async (id: number | string) => {
     const query = {
-      text: `select firstname, lastname, email, rol, events, image from admins where email = $1`,
+      text: `select firstname, lastname, email, rol, events, image, id_image from admins where email = $1`,
       values: [id],
     };
 
@@ -336,7 +342,7 @@ export class Database {
 
   static readSpeaker: any = async (id: number | string) => {
     const query = {
-      text: `select firstname, lastname, email, events, image from speakers where email = $1`,
+      text: `select firstname, lastname, email, events, image, id_image from speakers where email = $1`,
       values: [id],
     };
 

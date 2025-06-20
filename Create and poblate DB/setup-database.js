@@ -100,6 +100,7 @@ async function setupDatabase() {
     passwrd text COLLATE pg_catalog."default" NOT NULL,
     events integer[],
     image text COLLATE pg_catalog."default",
+    id_image text COLLATE pg_catalog."default",
     CONSTRAINT speakers_pk PRIMARY KEY (email)
 );
        `);
@@ -113,6 +114,7 @@ CREATE TABLE admins
     rol boolean,
     events integer[],
     image text COLLATE pg_catalog."default",
+    id_image text COLLATE pg_catalog."default",
     CONSTRAINT admins_pkey PRIMARY KEY (email)
 )
        `);
@@ -349,7 +351,7 @@ INSERT INTO feedbacks (eventid, id_, title, comment_, score, dateTime, likes, di
 
     `);
 
-     // initial track for Testing
+    // initial track for Testing
 
     await dbClient.query(`
      INSERT INTO tracks(
